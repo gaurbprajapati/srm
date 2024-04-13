@@ -3,7 +3,7 @@ Sure, I can help you write a similar README for the MERN stack version of the SR
 ```markdown
 # MERN-SRM
 ## Overview
-The MERN SRM project is a web application that enables users to effortlessly create and manage their resumes. It offers an intuitive user interface to add personal information, education details, work experiences, skills, and more. Additionally, the project provides customizable resume templates for PDF downloads and an upcoming feature for generating QR codes for resumes.
+The MERN SRM (student relationship management) project is a web application that enables users to effortlessly create and manage their resumes. It offers an intuitive user interface to add personal information, education details, work experiences, skills, and more. Additionally, the project provides customizable resume templates for PDF downloads and an upcoming feature for generating QR codes for resumes.
 
 ## Technologies Used
 - MongoDB: A NoSQL database used for storing application data.
