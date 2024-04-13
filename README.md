@@ -12,7 +12,7 @@ The MERN SRM (student relationship management) project is a web application that
 - Node.js: A runtime environment for server-side JavaScript.
 
 ## Setup Instructions
-Follow these steps to set up the MERN Resume Builder project on your local machine:
+Follow these steps to set up the MERN SRM project on your local machine:
 
 ### Step 1: Clone the Repository
 ```bash
