@@ -1,8 +1,7 @@
-Sure, I can help you write a similar README for the MERN stack version of the Resume Builder project. Here it is:
+Sure, I can help you write a similar README for the MERN stack version of the SRM project. Here it is:
 
 ```markdown
-# MERN-Resume-Builder
-
+# MERN-SRM
 ## Overview
 The MERN Resume Builder project is a web application that enables users to effortlessly create and manage their resumes. It offers an intuitive user interface to add personal information, education details, work experiences, skills, and more. Additionally, the project provides customizable resume templates for PDF downloads and an upcoming feature for generating QR codes for resumes.
 
