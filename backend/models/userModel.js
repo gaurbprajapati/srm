@@ -17,6 +17,10 @@ const userSchema = new mongoose.Schema(
         skills: { type: Array, default: [] },
         experience: { type: Array, default: [] },
         projects: { type: Array, default: [] },
+        isAdmin: {
+            type: Boolean,
+            default: false // You can set a default value if needed
+        }
     },
     {
         timestamps: true,
@@ -24,5 +28,3 @@ const userSchema = new mongoose.Schema(
 );
 
 export const User = mongoose.model("User", userSchema);
-
-// module.exports = userModel;

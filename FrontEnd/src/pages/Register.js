@@ -19,7 +19,7 @@ function Register() {
                 return message.error("Password must have at least 8 characters, including one uppercase letter, one lowercase letter, one special character, and one number.");
             }
 
-            const response = await axios.post("api/user/register/", values);
+            const response = await axios.post("http://localhost:5000/api/user/register/", values);
             setLoading(false);
             message.success(response.data.message); // Display success message
         } catch (error) {

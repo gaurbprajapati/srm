@@ -18,39 +18,33 @@ const Templateshome = () => {
         },
     ];
     return (
-        <>
-
-            <DefaultLayout>
-
-                <div className="row home" >
-                    {/* <HeroSection /> */}
-
-                    {templates.map((template, index) => {
-                        return (
-                            <div className="col-md-4  " style={{ marginLeft: '120px' }}>
-                                <div className="template" >
-                                    <img
-                                        src={template.image}
-                                        height="500"
-                                        alt=""
-                                        width='100%'
-                                        style={{ textAlign: 'center' }}
-                                    />
-                                    <div className="text" style={{ marginLeft: '20px' }}>
-                                        <p>{template.title}</p>
-                                        <button onClick={() => navigate(`/templates/${index + 1}`)}>
-                                            TRY
-                                        </button>
-                                    </div>
+        <DefaultLayout>
+            <div className="row home">
+                {/* <HeroSection /> */}
+                {templates.map((template, index) => {
+                    return (
+                        <div key={index} className="col-md-4" style={{ marginLeft: '120px' }}>
+                            <div className="template">
+                                <img
+                                    src={template.image}
+                                    height="500"
+                                    alt=""
+                                    width='100%'
+                                    style={{ textAlign: 'center' }}
+                                />
+                                <div className="text" style={{ marginLeft: '20px' }}>
+                                    <p>{template.title}</p>
+                                    <button onClick={() => navigate(`/templates/${index + 1}`)}>
+                                        TRY
+                                    </button>
                                 </div>
                             </div>
-                        );
-                    })}
-                </div>
-            </DefaultLayout >
-        </>
-
-    )
+                        </div>
+                    );
+                })}
+            </div>
+        </DefaultLayout>
+    );
 }
 
 export default Templateshome

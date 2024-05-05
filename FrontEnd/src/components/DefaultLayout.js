@@ -81,6 +81,7 @@ function DefaultLayout(props) {
             <Menu.Item key="2">
                 <Link to='/templates'>Templates</Link>
             </Menu.Item>
+
             <Menu.Item key="3" onClick={() => {
                 localStorage.removeItem("sheyresume-user");
                 navigate("/login");
@@ -95,6 +96,9 @@ function DefaultLayout(props) {
             <div className='layout'>
                 <div className='header'>
                     <h1 onClick={() => navigate('/home')} style={{ cursor: 'pointer', fontSize: '40px', fontStyle: 'bold' }}>GrowUp</h1>
+
+                    <h1 onClick={() => navigate('/clubs')} style={{ cursor: 'pointer', fontSize: '40px', fontStyle: 'bold' }}>clubs</h1>
+                    <h1 onClick={() => navigate('/jobs')} style={{ cursor: 'pointer', fontSize: '40px', fontStyle: 'bold' }}>Jobs</h1>
 
                     <Dropdown overlay={menu} trigger={['click']}>
                         <button className="user-button">

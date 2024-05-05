@@ -38,7 +38,7 @@ export const Clubdata = [
   {
     id: 2,
     img: work2,
-    link: "/Resources",
+    link: "/sportsclub",
     title: "club title  2",
     discription:
       " Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except Antarctica",
@@ -48,7 +48,7 @@ export const Clubdata = [
   {
     id: 3,
     img: work3,
-    link: "/Resources",
+    link: "/sportsclub",
     title: "club title  3",
     discription:
       " Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except Antarctica",
@@ -58,7 +58,7 @@ export const Clubdata = [
   {
     id: 9,
     img: work3,
-    link: "/Resources",
+    link: "/sportsclub",
     title: "club title  3",
     discription:
       " Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except Antarctica",
@@ -68,7 +68,7 @@ export const Clubdata = [
   {
     id: 4,
     img: work4,
-    link: "/Resources",
+    link: "/sportsclub",
     title: "club title  4",
     discription:
       " Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except Antarctica",
@@ -78,32 +78,32 @@ export const Clubdata = [
   {
     id: 8,
     img: work4,
-    link: "/Resources",
+    link: "/sportsclub",
     title: "club title  4",
     discription:
       " Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except Antarctica",
 
     category: "cultural",
-  },
-  {
-    id: 5,
-    img: work5,
-    link: "/Resources",
-    title: "club title  5",
-    discription:
-      " Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except Antarctica",
-    category: "cultural",
-  },
-  {
-    id: 6,
-    img: work6,
-    link: "/Resources",
-    title: "club title  6",
-    discription:
-      " Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except Antarctica",
+  }
+  // {
+  //   id: 5,
+  //   img: work5,
+  //   link: "/sportsclub",
+  //   title: "club title  5",
+  //   discription:
+  //     " Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except Antarctica",
+  //   category: "cultural",
+  // },
+  // {
+  //   id: 6,
+  //   img: work6,
+  //   link: "/sportsclub",
+  //   title: "club title  6",
+  //   discription:
+  //     " Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except Antarctica",
 
-    category: "Sports",
-  },
+  //   category: "Sports",
+  // },
 ];
 
 export const jugard = [

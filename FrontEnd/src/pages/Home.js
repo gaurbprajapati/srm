@@ -3,6 +3,7 @@ import DefaultLayout from "../components/DefaultLayout";
 
 import '.././resources/Home.css'
 import { Link } from 'react-router-dom';
+import LeftLayout from "../components/LeftLayout";
 function Home() {
 
     return (

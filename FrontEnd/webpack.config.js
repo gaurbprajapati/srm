@@ -1,5 +1,8 @@
 module.exports = {
     // ...
+    devServer: {
+        hot: false,
+    },
     module: {
         rules: [
             {
@@ -7,13 +10,17 @@ module.exports = {
                 use: [
                     'style-loader',
                     'css-loader',
-                    // Disable the source-map-loader for Ant Design LESS files
                     {
                         loader: 'source-map-loader',
-                        exclude: ["./node_modules/antd"]
-                    }
-                ]
-            }
-        ]
-    }
+                        options: {
+                            exclude: [
+                                // Exclude Ant Design LESS files from source-map-loader
+                                /node_modules\/antd\/.*\.less$/,
+                            ],
+                        },
+                    },
+                ],
+            },
+        ],
+    },
 };

@@ -4,31 +4,33 @@ import Home from './pages/Home';
 import Profile from './pages/Profile';
 import Templates from './pages/templates/Templates';
 import './App.css';
-
-// import 'antd/dist/antd.min.css';
-
-
+import { ClubHome } from './components/Clubs/ClubHome';
+import { CreateClub } from './components/Clubs/CreateClub';
+// import { Sportsclub } from './components/Clubs/club/Sportsclub';
+import { Clubs } from './components/Clubs/club/Clubs';
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Templateshome from './pages/Templateshome';
-
+import { JobHome } from './components/Jobs/JobHome';
 function App() {
 
   return (
-    <>
-      <section className='Appp'>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-            <Route path="/home" element={<ProtectedRoute>< Home /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute>< Profile /></ProtectedRoute>} />
-            <Route path="/templates/:id" element={<ProtectedRoute><Templates /></ProtectedRoute>} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/templates" element={<Templateshome />} />
-          </Routes>
-        </BrowserRouter>
-      </section>
-    </>
+    <section className='Appp'>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          <Route path="/home" element={<ProtectedRoute>< Home /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute>< Profile /></ProtectedRoute>} />
+          <Route path="/templates/:id" element={<ProtectedRoute><Templates /></ProtectedRoute>} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/templates" element={<Templateshome />} />
+          <Route path="/clubs" element={<ClubHome />} />
+          <Route path="/CreateClub" element={<CreateClub />} />
+          <Route path="/Club/:id" element={<Clubs />} />
+          <Route path="/jobs" element={<JobHome />} />
+        </Routes>
+      </BrowserRouter>
+    </section>
   );
 }
 
