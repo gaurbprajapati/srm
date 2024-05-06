@@ -8,6 +8,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from "axios";
 import { Spin, Pagination, Button } from "antd";
 const Clubcard = () => {
+
+  const user = JSON.parse(localStorage.getItem("sheyresume-user"));
   const navigate = useNavigate();
   const [tab, setTab] = useState({ name: "all" });
   const [cdata, setCdata] = useState([]);
@@ -69,7 +71,7 @@ const Clubcard = () => {
   return (
     <>
 
-      <Button onClick={() => navigate('/CreateClub')} >ADD CLUBS</Button>
+      {user && user.isAdmin ? <Button onClick={() => navigate('/CreateClub')} >ADD CLUBS</Button> : null}
       <div className="container" id="Clubcard">
         <motion.div
           initial={{ opacity: 0 }}

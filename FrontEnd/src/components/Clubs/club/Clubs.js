@@ -29,7 +29,7 @@ export const Clubs = () => {
     console.log(e.target.files[0]);
     setImage(e.target.files[0]);
   };
-
+  const user = JSON.parse(localStorage.getItem("sheyresume-user"));
 
   useEffect(() => {
     const fetchClubsData = async () => {
@@ -130,8 +130,8 @@ export const Clubs = () => {
     <DefaultLayout>
       {val ?
         <div style={{ display: 'flex' }}>
-          <Button className="editClub-btn" style={{ marginRight: '10px' }} onClick={showModal} >Edit Cubs</Button>
-          <Button className="editClub-btn" onClick={confirmDelete}  >Delete Cubs</Button>
+          {user && user.isAdmin ? <Button className="editClub-btn" style={{ marginRight: '10px' }} onClick={showModal} >Edit Cubs</Button> : null}
+          {user && user.isAdmin ? <Button className="editClub-btn" onClick={confirmDelete}  >Delete Cubs</Button> : null}
         </div>
         : null}
 

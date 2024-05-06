@@ -13,7 +13,7 @@ export const JobHome = () => {
     const [loading, setLoading] = useState(false);
     const [editVisible, setEditVisible] = useState(false);
     const [form] = Form.useForm();
-
+    const user = JSON.parse(localStorage.getItem("sheyresume-user"));
     useEffect(() => {
 
         const fetchJobs = async () => {
@@ -116,7 +116,7 @@ export const JobHome = () => {
                 <Checkbox value="Off-Compus">Off-Compus</Checkbox>
                 {/* Add more Checkboxes as needed */}
             </Checkbox.Group>
-            <Button onClick={showEditModal}>Add Jobs</Button>
+            {user && user.isAdmin ? <Button onClick={showEditModal}>Add Jobs</Button> : null}
 
             <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', padding: '20px 0' }}>
                 {currentJobs.map(job => (

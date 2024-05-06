@@ -4,6 +4,9 @@ import { Row, Col, Select, Checkbox, message, Spin } from 'antd';
 import axios from 'axios';
 
 export const JobCard = ({ job, onJobUpdate, onJobDelete }) => {
+
+    const user = JSON.parse(localStorage.getItem("sheyresume-user"));
+
     const [visible, setVisible] = useState(false);
     const [editVisible, setEditVisible] = useState(false);
     const [form] = Form.useForm();
@@ -100,8 +103,8 @@ export const JobCard = ({ job, onJobUpdate, onJobDelete }) => {
                 <p>Posted Date: {new Date(job.postedDate).toLocaleDateString()}</p>
 
                 <Button onClick={showModal}>Full detail</Button>
-                <Button onClick={showEditModal}>Edit</Button>
-                <Button onClick={confirmDelete}>Delete</Button>
+                {user && user.isAdmin ? <Button onClick={showEditModal}>Edit</Button> : null}
+                {user && user.isAdmin ? <Button onClick={confirmDelete}>Delete</Button> : null}
 
 
             </Card>
