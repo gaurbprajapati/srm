@@ -99,6 +99,7 @@ function DefaultLayout(props) {
 
                     <h1 onClick={() => navigate('/clubs')} style={{ cursor: 'pointer', fontSize: '40px', fontStyle: 'bold' }}>clubs</h1>
                     <h1 onClick={() => navigate('/jobs')} style={{ cursor: 'pointer', fontSize: '40px', fontStyle: 'bold' }}>Jobs</h1>
+                    <h1 onClick={() => navigate('/learning')} style={{ cursor: 'pointer', fontSize: '40px', fontStyle: 'bold' }}>Guid</h1>
 
                     <Dropdown overlay={menu} trigger={['click']}>
                         <button className="user-button">

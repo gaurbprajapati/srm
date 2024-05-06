@@ -11,6 +11,10 @@ import { Clubs } from './components/Clubs/club/Clubs';
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Templateshome from './pages/Templateshome';
 import { JobHome } from './components/Jobs/JobHome';
+import ErrorPage from './components/ErrorPage/ErrorPage';
+import ResourceCard from './components/LearningPages/ResourceCard/ResourceCard';
+import Resource from "./components/LearningPages/ResourceCard/Resource"
+
 function App() {
 
   return (
@@ -28,6 +32,9 @@ function App() {
           <Route path="/CreateClub" element={<CreateClub />} />
           <Route path="/Club/:id" element={<Clubs />} />
           <Route path="/jobs" element={<JobHome />} />
+          <Route path="/learning" element={<ResourceCard />} />
+          <Route path="/Resources" element={<Resource />} />
+          <Route path="*" element={<ErrorPage />} />
         </Routes>
       </BrowserRouter>
     </section>
