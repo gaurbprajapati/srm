@@ -35,7 +35,7 @@ export const JobCard = ({ job, onJobUpdate, onJobDelete }) => {
         setLoading(true);
         try {
             const response = await axios.patch(`http://localhost:5000/jobs/${job._id}`, values);
-            onJobDelete(response.data._id);
+            onJobUpdate(response.data);
             setEditVisible(false);
             setLoading(false);
             message.success('Job updated successfully');
@@ -55,7 +55,7 @@ export const JobCard = ({ job, onJobUpdate, onJobDelete }) => {
         setLoading(true)
         try {
             const response = await axios.delete(`http://localhost:5000/jobs/${job._id}`);
-            onJobDelete(response.data);
+            onJobDelete(response.data._id);
             setEditVisible(false);
             setLoading(false)
             message.success('Job Deleted Successfully');
