@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Upload, message, Spin, Select, DatePicker, Row, Col } from 'antd';
+import { Form, Input, Button, Upload, message, Spin, Select, DatePicker, Row, Col, Typography } from 'antd';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import DefaultLayout from '../DefaultLayout';
 import { Navigate } from "react-router-dom";
 const { TextArea } = Input;
 const { Option } = Select;
+const { Title } = Typography;
 const normFile = (e) => {
     if (Array.isArray(e)) {
         return e;
@@ -80,6 +81,8 @@ export const CreateClub = () => {
     return (
 
         <DefaultLayout>
+
+            <Title>Add Your Campus New Club</Title>
             {loading && <Spin size='large' />}
 
             <Form

@@ -74,12 +74,12 @@ export const Clubs = () => {
     setLoader(true)
     try {
       const response = await axios.delete(`http://localhost:5000/club/${id}`);
-      console.log(response.data);
+      // console.log(response.data);
       message.success('Club Deleted Successfully');
       setLoader(false)
       navigate('/clubs');
     } catch (error) {
-      console.error(error);
+      // console.error(error);
       message.error("Deleting Club Failed");
       setLoader(false)
     }
@@ -160,7 +160,7 @@ export const Clubs = () => {
 
             <div className="achievement">
               <h1>Achievement</h1>
-              <p>{achievement.length}</p>
+              {/* <p>{achievement.length}</p> */}
               {(achievement).map((ach, index) => (
                 <p key={index}>{ach}</p>
               ))}

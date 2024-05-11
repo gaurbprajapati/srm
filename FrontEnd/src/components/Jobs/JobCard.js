@@ -1,5 +1,5 @@
 import { React, useState } from 'react'
-import { Card, Modal, Button, Form, Input } from 'antd';
+import { Card, Modal, Button, Form, Input, Badge } from 'antd';
 import { Row, Col, Select, Checkbox, message, Spin } from 'antd';
 import axios from 'axios';
 
@@ -90,25 +90,27 @@ export const JobCard = ({ job, onJobUpdate, onJobDelete }) => {
 
     return (
         <>
-            <Card title={job.title} style={{ width: 300, cursor: 'pointer' }}  >
-                <p>Company: {job.company}</p>
-                <p>Location: {job.location}</p>
-                <p>Salary: {job.salary}</p>
-                <p>Description: {job.description}</p>
-                {/* <p>Requirements: {job.requirements.join(', ')}</p> */}
-                <p>Eligibility: {job.eligibility}</p>
-                {/* <p>LinkedIn: <a href={job.linkedin}>Link</a></p> */}
-                {/* <p>Company Website: <a href={job.companyWebsite}>Link</a></p> */}
-                {/* <p>Type: {job.type}</p> */}
-                <p>Posted Date: {new Date(job.postedDate).toLocaleDateString()}</p>
-
-                <Button onClick={showModal}>Full detail</Button>
-                {user && user.isAdmin ? <Button onClick={showEditModal}>Edit</Button> : null}
-                {user && user.isAdmin ? <Button onClick={confirmDelete}>Delete</Button> : null}
+            <Badge.Ribbon text={job.campus} color="red">
 
 
-            </Card>
+                <Card title={job.title} style={{ width: 300, cursor: 'pointer' }}  >
+                    {/* <Badge count={job.compus} style={{ position: 'absolute', top: -4, left: -4 }} /> */}
+                    <p>Company: {job.company}</p>
+                    <p>Location: {job.location}</p>
+                    <p>Salary: {job.salary}</p>
+                    <p>Description: {job.description}</p>
+                    {/* <p>Requirements: {job.requirements.join(', ')}</p> */}
+                    <p>Eligibility: {job.eligibility}</p>
+                    {/* <p>LinkedIn: <a href={job.linkedin}>Link</a></p> */}
+                    {/* <p>Company Website: <a href={job.companyWebsite}>Link</a></p> */}
+                    {/* <p>Type: {job.type}</p> */}
+                    <p>Posted Date: {new Date(job.postedDate).toLocaleDateString()}</p>
 
+                    <Button onClick={showModal}>Full detail</Button>
+                    {user && user.isAdmin ? <Button onClick={showEditModal}>Edit</Button> : null}
+                    {user && user.isAdmin ? <Button onClick={confirmDelete}>Delete</Button> : null}
+                </Card>
+            </Badge.Ribbon>
             <Modal title={job.title} visible={visible} onOk={handleOk} onCancel={handleCancel} footer={[
                 <Button key="back" onClick={handleCancel}>
                     Close

@@ -4,7 +4,7 @@ import { Modal, Row, Col, Select, Pagination, message, Spin, Form, Input, button
 import DefaultLayout from '../DefaultLayout';
 import { JobCard } from './JobCard';
 import { Checkbox } from 'antd';
-
+import { useNavigate, Link } from 'react-router-dom';
 export const JobHome = () => {
     const [jobs, setJobs] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -13,6 +13,7 @@ export const JobHome = () => {
     const [loading, setLoading] = useState(false);
     const [editVisible, setEditVisible] = useState(false);
     const [form] = Form.useForm();
+    const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem("sheyresume-user"));
     useEffect(() => {
 
@@ -116,7 +117,8 @@ export const JobHome = () => {
                 <Checkbox value="Off-Compus">Off-Compus</Checkbox>
                 {/* Add more Checkboxes as needed */}
             </Checkbox.Group>
-            {user && user.isAdmin ? <Button onClick={showEditModal}>Add Jobs</Button> : null}
+            {user && user.isAdmin ? <Button type="dashed" style={{ marginRight: '2px' }} onClick={showEditModal}>Add Jobs</Button> : null}
+            <Button type="dashed" onClick={() => navigate('/oncampusjobs')} >Campus Company</Button>
 
             <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', padding: '20px 0' }}>
                 {currentJobs.map(job => (

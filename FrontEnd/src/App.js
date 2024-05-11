@@ -11,6 +11,7 @@ import { Clubs } from './components/Clubs/club/Clubs';
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Templateshome from './pages/Templateshome';
 import { JobHome } from './components/Jobs/JobHome';
+import OnCampusJobs from './components/Jobs/OnCampusJobs';
 function App() {
 
   return (
@@ -28,6 +29,7 @@ function App() {
           <Route path="/CreateClub" element={<CreateClub />} />
           <Route path="/Club/:id" element={<Clubs />} />
           <Route path="/jobs" element={<JobHome />} />
+          <Route path="/oncampusjobs" element={<OnCampusJobs />} />
         </Routes>
       </BrowserRouter>
     </section>
