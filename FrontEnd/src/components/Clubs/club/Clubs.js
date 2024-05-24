@@ -7,6 +7,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Button, Spin, message, Modal } from "antd";
 import { Form, Input, Select, Row, Col, DatePicker } from 'antd';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { FaWhatsapp, FaInstagram, FaLinkedin, FaDiscord } from 'react-icons/fa';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -214,6 +215,16 @@ export const Clubs = () => {
               }
             })} */}
             {/* </div> */}
+          </div>
+        </div>
+
+        <div className="footer" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
+          <h2>Get Connect On</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-around', width: '200px', paddingBottom: '40px' }}>
+            <a href={clubData.whatup} target="_blank" rel="noopener noreferrer"><FaWhatsapp size={30} /></a>
+            <a href={clubData.instagram} target="_blank" rel="noopener noreferrer"><FaInstagram size={30} /></a>
+            <a href={clubData.linkedin} target="_blank" rel="noopener noreferrer"><FaLinkedin size={30} /></a>
+            <a href={clubData.discord} target="_blank" rel="noopener noreferrer"><FaDiscord size={30} /></a>
           </div>
         </div>
       </div >

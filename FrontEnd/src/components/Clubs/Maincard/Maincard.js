@@ -32,7 +32,7 @@ function Maincard(props) {
                   {dataval.title}
                 </h2>
                 <p className="p-text" style={{ marginTop: 10 }}>
-                  {dataval.discription}
+                  {dataval.discription.split(' ').slice(0, 10).join(' ')}
                 </p>
                 <motion.div
                   initial={{ opacity: 0 }}

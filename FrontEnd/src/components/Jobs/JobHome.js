@@ -113,8 +113,8 @@ export const JobHome = () => {
                 <Checkbox value="Full-time">Full-time</Checkbox>
                 <Checkbox value="Part-time">Part-time</Checkbox>
                 <Checkbox value="Internship">Internship</Checkbox>
-                <Checkbox value="On-Compus">On-Compus</Checkbox>
-                <Checkbox value="Off-Compus">Off-Compus</Checkbox>
+                {/* <Checkbox value="On-Compus">On-Compus</Checkbox>
+                <Checkbox value="Off-Compus">Off-Compus</Checkbox> */}
                 {/* Add more Checkboxes as needed */}
             </Checkbox.Group>
             {user && user.isAdmin ? <Button type="dashed" style={{ marginRight: '2px' }} onClick={showEditModal}>Add Jobs</Button> : null}

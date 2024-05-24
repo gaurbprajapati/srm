@@ -106,8 +106,8 @@ export const JobCard = ({ job, onJobUpdate, onJobDelete }) => {
                     {/* <p>Type: {job.type}</p> */}
                     <p>Posted Date: {new Date(job.postedDate).toLocaleDateString()}</p>
 
-                    <Button onClick={showModal}>Full detail</Button>
-                    {user && user.isAdmin ? <Button onClick={showEditModal}>Edit</Button> : null}
+                    <Button style={{ marginRight: '10px' }} onClick={showModal}>Full detail</Button>
+                    {user && user.isAdmin ? <Button style={{ marginRight: '10px' }} onClick={showEditModal}>Edit</Button> : null}
                     {user && user.isAdmin ? <Button onClick={confirmDelete}>Delete</Button> : null}
                 </Card>
             </Badge.Ribbon>

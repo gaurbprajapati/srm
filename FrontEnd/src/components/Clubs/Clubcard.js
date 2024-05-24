@@ -80,7 +80,7 @@ const Clubcard = () => {
           className="title"
         >
           <span>N I E T</span>
-          <h1>Collage Clubs</h1>
+          <h1>College Clubs</h1>
         </motion.div>
         <motion.div
           initial={{ opacity: 0 }}
