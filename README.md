@@ -1,4 +1,20 @@
-Sure, I can help you write a similar README for the MERN stack version of the SRM project. Here it is:
+
+
+![flow chart](https://github.com/gaurbprajapati/srm/assets/91283293/2824c7dc-9f3a-4099-9947-6392e62dbd7f)
+
+![bPBDxjem4CJlUGgBE-AUGmM2VhHg9TIFzeA477i9JXqxiZVYKFNTwsosIGekqfzJjFkRORAJRKGPi6zjOU620hq8fhwYq2Q0GkDTKNHI_PGrYDNUMpiylEkhbVXLYFIRTb-mr-2Gv_JJ4cKbOrhkbFAzmvFx95sYMm9b57ASPnJ7u1jGIN40bCP6mZiQvl3F4FiMJkujE0WIVI0-q3I3xs](https://github.com/gaurbprajapati/srm/assets/91283293/eb24b758-476d-463b-8378-12167be2d26d)
+
+
+
+![teacher db and web-app access](https://github.com/gaurbprajapati/srm/assets/91283293/291fad20-27d5-40dd-90d6-5249b8fb6732)
+
+![Student db and web-app access](https://github.com/gaurbprajapati/srm/assets/91283293/d075a7ad-01db-44b3-8403-52a555ee9048)
+
+
+![student web-app action allows](https://github.com/gaurbprajapati/srm/assets/91283293/655d8184-3ca6-441f-b2ff-348ff15399e7)
+
+
+![teacher web-app action allows](https://github.com/gaurbprajapati/srm/assets/91283293/f2eb67a2-8ae7-4646-8821-d5fa9b8a4ee7)
 
 ```markdown
 # MERN-SRM
