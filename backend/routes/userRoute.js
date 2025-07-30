@@ -1,20 +1,44 @@
 import express from "express";
-
-
-import { userRegister, userLogin, userUpdate, check } from '../controllers/user.js';
-
+import {
+    register,
+    login,
+    logout,
+    getProfile,
+    updateUser,
+    changePassword,
+    refreshToken,
+    getAllUsers,
+    deleteUser,
+    test
+} from '../controllers/user.js';
+import {
+    authenticateToken,
+    requireAdmin,
+    rateLimitLogin,
+    validateRefreshToken,
+    requireOwnershipOrAdmin
+} from '../middleware/auth.js';
 
 const router = express.Router();
 
-router.post("/login", userLogin);
+// Public routes (no authentication required)
+router.post("/register", register);
+router.post("/login", rateLimitLogin, login);
 
-router.post("/register", userRegister);
+// Token refresh route (special middleware)
+router.post("/refresh-token", validateRefreshToken, refreshToken);
 
-router.post("/update", userUpdate);
+// Protected routes (authentication required)
+router.use(authenticateToken); // Apply authentication to all routes below
 
-// router.get("/test",check);
-router.get("/test", check);
+router.post("/logout", logout);
+router.get("/profile", getProfile);
+router.put("/profile", updateUser);
+router.put("/change-password", changePassword);
 
-
+// Admin only routes
+router.get("/users", requireAdmin, getAllUsers);
+router.delete("/users/:id", requireAdmin, deleteUser);
+router.get("/test", requireAdmin, test);
 
 export default router;

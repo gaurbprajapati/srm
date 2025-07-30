@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { Modal, Row, Col, Select, Pagination, message, Spin, Form, Input, button, Button } from 'antd';
+import { Modal, Row, Col, Select, Pagination, message, Spin, Form, Input, Button } from 'antd';
 import DefaultLayout from '../DefaultLayout';
 import { JobCard } from './JobCard';
 import { Checkbox } from 'antd';
 import { useNavigate, Link } from 'react-router-dom';
+import { jobAPI, apiUtils } from '../../utils/api';
+
 export const JobHome = () => {
     const [jobs, setJobs] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -14,200 +15,275 @@ export const JobHome = () => {
     const [editVisible, setEditVisible] = useState(false);
     const [form] = Form.useForm();
     const navigate = useNavigate();
-    const user = JSON.parse(localStorage.getItem("sheyresume-user"));
-    useEffect(() => {
+    const user = apiUtils.getCurrentUser();
 
+    useEffect(() => {
         const fetchJobs = async () => {
             setLoading(true);
             try {
-                const res = await axios.get('http://localhost:5000/jobs');
+                const response = await jobAPI.getJobs({
+                    page: currentPage,
+                    limit: jobsPerPage,
+                    type: type !== 'All' ? type : undefined
+                });
 
-                setJobs(res.data);
+                if (response.success) {
+                    setJobs(response.data || []);
+                } else {
+                    setJobs([]);
+                }
                 setLoading(false);
-                // message.success('Jobs fetched successfully');
             } catch (err) {
                 console.error(err);
                 setLoading(false);
-                // message.error('Failed to fetch jobs');
+                message.error('Failed to fetch jobs');
+                setJobs([]);
             }
         };
         fetchJobs();
-    }, []);
+    }, [currentPage, type]);
 
-
-    // useEffect(() => {
     const handleEditOk = async () => {
-        const values = await form.validateFields();
-        setLoading(true);
         try {
-            const response = await axios.post("http://localhost:5000/create-jobs", values);
-            setJobs(response.data);
-            setEditVisible(false);
-            setLoading(false);
-            message.success('Job updated successfully');
+            const values = await form.validateFields();
+            setLoading(true);
+
+            const response = await jobAPI.createJob(values);
+
+            if (response.success) {
+                // Refresh jobs list
+                const updatedJobs = await jobAPI.getJobs({
+                    page: currentPage,
+                    limit: jobsPerPage,
+                    type: type !== 'All' ? type : undefined
+                });
+
+                if (updatedJobs.success) {
+                    setJobs(updatedJobs.data || []);
+                }
+
+                setEditVisible(false);
+                form.resetFields();
+                setLoading(false);
+                message.success(response.message || 'Job created successfully');
+            }
         } catch (err) {
             console.error(err);
             setLoading(false);
-            message.error('Failed to update job');
+            const errorMessage = err.response?.data?.error || 'Failed to create job';
+            message.error(errorMessage);
         }
     };
-    //     handleEditOk()
-    // }, [jobs, form]);
-
-    const showEditModal = () => {
-        setEditVisible(true);
-    };
-
-
-    const handleClick = checkedValues => {
-        setType(checkedValues);
-    };
-
-    const handleJobUpdate = (updatedJob) => {
-        setJobs(jobs.map(job => job._id === updatedJob._id ? updatedJob : job));
-    };
-
-    const handleJobDelete = (deletedJobId) => {
-        setJobs(jobs.filter(job => job._id !== deletedJobId));
-    };
-
-    if (loading) {
-        return <Spin size='large' />
-    }
-
 
     const handleEditCancel = () => {
         setEditVisible(false);
+        form.resetFields();
     };
 
+    // Filter jobs based on type
+    const filteredJobs = type === 'All' ? jobs : jobs.filter(job => job.type === type);
 
-
-
-
-
-    console.log('jobs:', jobs);
-    console.log('type:', type);
-    const filteredJobs = type.includes('All') ? jobs : jobs.filter(job => {
-        console.log('job.type:', job.type);
-        return type.includes(job.type);
-    });
-    console.log('filteredJobs:', filteredJobs);
-
+    // Pagination
     const indexOfLastJob = currentPage * jobsPerPage;
     const indexOfFirstJob = indexOfLastJob - jobsPerPage;
     const currentJobs = filteredJobs.slice(indexOfFirstJob, indexOfLastJob);
 
-    const paginate = pageNumber => setCurrentPage(pageNumber);
-
     return (
         <DefaultLayout>
-            {/* <Menu onClick={handleClick} selectedKeys={[type]} mode="horizontal">
-                <Menu.Item key="All">All</Menu.Item>
-                <Menu.Item key="Full-time">Full-time</Menu.Item>
-                <Menu.Item key="Part-time">Part-time</Menu.Item> */}
-            {/* Add more Menu.Items as needed */}
-            {/* </Menu> */}
+            <div style={{ padding: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                    <h1>Campus Jobs & Opportunities</h1>
 
-            <Checkbox.Group onChange={handleClick} defaultValue={['All']}>
-                <Checkbox value="All">All</Checkbox>
-                <Checkbox value="Full-time">Full-time</Checkbox>
-                <Checkbox value="Part-time">Part-time</Checkbox>
-                <Checkbox value="Internship">Internship</Checkbox>
-                {/* <Checkbox value="On-Compus">On-Compus</Checkbox>
-                <Checkbox value="Off-Compus">Off-Compus</Checkbox> */}
-                {/* Add more Checkboxes as needed */}
-            </Checkbox.Group>
-            {user && user.isAdmin ? <Button type="dashed" style={{ marginRight: '2px' }} onClick={showEditModal}>Add Jobs</Button> : null}
-            <Button type="dashed" onClick={() => navigate('/oncampusjobs')} >Campus Company</Button>
+                    {/* Job Type Filter */}
+                    <Select
+                        value={type}
+                        onChange={setType}
+                        style={{ width: 200 }}
+                        placeholder="Filter by type"
+                    >
+                        <Select.Option value="All">All Types</Select.Option>
+                        <Select.Option value="full-time">Full Time</Select.Option>
+                        <Select.Option value="part-time">Part Time</Select.Option>
+                        <Select.Option value="internship">Internship</Select.Option>
+                        <Select.Option value="contract">Contract</Select.Option>
+                        <Select.Option value="freelance">Freelance</Select.Option>
+                    </Select>
+                </div>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', padding: '20px 0' }}>
-                {currentJobs.map(job => (
-                    <JobCard key={job._id} job={job} onJobUpdate={handleJobUpdate} onJobDelete={handleJobDelete} />
-                ))}
+                {/* Add Job Button - Only for authenticated users */}
+                {apiUtils.isAuthenticated() && (
+                    <div style={{ marginBottom: '20px' }}>
+                        <Button
+                            type="primary"
+                            onClick={() => setEditVisible(true)}
+                            size="large"
+                        >
+                            Post New Job
+                        </Button>
+                    </div>
+                )}
+
+                {/* Jobs Loading State */}
+                {loading && (
+                    <div style={{ textAlign: 'center', padding: '50px' }}>
+                        <Spin size="large" />
+                        <p>Loading jobs...</p>
+                    </div>
+                )}
+
+                {/* Jobs Grid */}
+                {!loading && (
+                    <>
+                        {currentJobs.length > 0 ? (
+                            <Row gutter={[16, 16]}>
+                                {currentJobs.map((job, index) => (
+                                    <Col key={job._id || index} xs={24} sm={12} lg={8} xl={6}>
+                                        <JobCard job={job} onUpdate={() => {
+                                            // Refresh jobs after update
+                                            const fetchJobs = async () => {
+                                                const response = await jobAPI.getJobs({
+                                                    page: currentPage,
+                                                    limit: jobsPerPage,
+                                                    type: type !== 'All' ? type : undefined
+                                                });
+                                                if (response.success) {
+                                                    setJobs(response.data || []);
+                                                }
+                                            };
+                                            fetchJobs();
+                                        }} />
+                                    </Col>
+                                ))}
+                            </Row>
+                        ) : (
+                            <div style={{ textAlign: 'center', padding: '40px' }}>
+                                <h3>No jobs found</h3>
+                                <p>
+                                    {type === 'All'
+                                        ? 'No jobs are currently available.'
+                                        : `No ${type} jobs found.`
+                                    }
+                                </p>
+                                {apiUtils.isAuthenticated() && (
+                                    <Button
+                                        type="primary"
+                                        onClick={() => setEditVisible(true)}
+                                        style={{ marginTop: '20px' }}
+                                    >
+                                        Post the first {type !== 'All' ? type : ''} job!
+                                    </Button>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Pagination */}
+                        {filteredJobs.length > jobsPerPage && (
+                            <div style={{ textAlign: 'center', marginTop: '40px' }}>
+                                <Pagination
+                                    current={currentPage}
+                                    total={filteredJobs.length}
+                                    pageSize={jobsPerPage}
+                                    onChange={setCurrentPage}
+                                    showSizeChanger={false}
+                                    showQuickJumper
+                                    showTotal={(total, range) =>
+                                        `${range[0]}-${range[1]} of ${total} jobs`
+                                    }
+                                />
+                            </div>
+                        )}
+                    </>
+                )}
+
+                {/* Create Job Modal */}
+                <Modal
+                    title="Post New Job"
+                    open={editVisible}
+                    onOk={handleEditOk}
+                    onCancel={handleEditCancel}
+                    width={800}
+                    confirmLoading={loading}
+                >
+                    <Form
+                        form={form}
+                        layout="vertical"
+                        initialValues={{ type: 'full-time', campus: 'off-campus' }}
+                    >
+                        <Row gutter={16}>
+                            <Col span={12}>
+                                <Form.Item
+                                    name="title"
+                                    label="Job Title"
+                                    rules={[{ required: true, message: 'Please enter job title' }]}
+                                >
+                                    <Input placeholder="Enter job title" />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item
+                                    name="company"
+                                    label="Company"
+                                    rules={[{ required: true, message: 'Please enter company name' }]}
+                                >
+                                    <Input placeholder="Enter company name" />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+
+                        <Row gutter={16}>
+                            <Col span={8}>
+                                <Form.Item name="type" label="Job Type">
+                                    <Select>
+                                        <Select.Option value="full-time">Full Time</Select.Option>
+                                        <Select.Option value="part-time">Part Time</Select.Option>
+                                        <Select.Option value="internship">Internship</Select.Option>
+                                        <Select.Option value="contract">Contract</Select.Option>
+                                        <Select.Option value="freelance">Freelance</Select.Option>
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            <Col span={8}>
+                                <Form.Item name="campus" label="Campus Type">
+                                    <Select>
+                                        <Select.Option value="on-campus">On Campus</Select.Option>
+                                        <Select.Option value="off-campus">Off Campus</Select.Option>
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            <Col span={8}>
+                                <Form.Item name="location" label="Location">
+                                    <Input placeholder="Job location" />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+
+                        <Form.Item name="salary" label="Salary">
+                            <Input placeholder="Salary range" />
+                        </Form.Item>
+
+                        <Form.Item name="description" label="Job Description">
+                            <Input.TextArea rows={4} placeholder="Describe the job role and responsibilities" />
+                        </Form.Item>
+
+                        <Form.Item name="eligibility" label="Eligibility">
+                            <Input.TextArea rows={2} placeholder="Eligibility criteria" />
+                        </Form.Item>
+
+                        <Row gutter={16}>
+                            <Col span={12}>
+                                <Form.Item name="linkedin" label="LinkedIn">
+                                    <Input placeholder="LinkedIn profile/company page" />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="companyWebsite" label="Company Website">
+                                    <Input placeholder="Company website URL" />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Form>
+                </Modal>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-                <Pagination
-                    current={currentPage}
-                    total={filteredJobs.length}
-                    pageSize={jobsPerPage}
-                    onChange={paginate}
-                />
-            </div>
-
-            <Modal title="Add Job" visible={editVisible} onOk={handleEditOk} onCancel={handleEditCancel}>
-                <Form form={form} layout="vertical">
-                    <Row gutter={16}>
-                        <Col span={8}>
-                            <Form.Item name="title" label="Title" rules={[{ required: true }]}>
-                                <Input />
-                            </Form.Item>
-                        </Col>
-                        <Col span={8}>
-                            <Form.Item name="company" label="Company" rules={[{ required: true }]}>
-                                <Input />
-                            </Form.Item>
-                        </Col>
-                        <Col span={8}>
-                            <Form.Item name="location" label="Location">
-                                <Input />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-
-                    <Row gutter={16}>
-                        <Col span={8}>
-                            <Form.Item name="description" label="Description">
-                                <Input.TextArea />
-                            </Form.Item>
-                        </Col>
-                        <Col span={8}>
-                            <Form.Item name="requirements" label="Requirements">
-                                <Input.TextArea />
-                            </Form.Item>
-                        </Col>
-                        <Col span={8}>
-                            <Form.Item name="eligibility" label="Eligibility">
-                                <Input />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-
-                    <Row gutter={16}>
-                        <Col span={8}>
-                            <Form.Item name="linkedin" label="LinkedIn">
-                                <Input />
-                            </Form.Item>
-                        </Col>
-                        <Col span={8}>
-                            <Form.Item name="companyWebsite" label="Company Website">
-                                <Input />
-                            </Form.Item>
-                        </Col>
-                        <Col span={8}>
-
-                            <Form.Item name="salary" label="Salary">
-                                <Input />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Form.Item name="type" label="Type">
-                        <Select>
-                            <Select.Option value="Part-time">Part-time</Select.Option>
-                            <Select.Option value="Full-time">Full-time</Select.Option>
-                            <Select.Option value="Internship">Internship</Select.Option>
-                        </Select>
-                    </Form.Item>
-                    <Form.Item name="campus" label="Campus">
-                        <Select>
-                            <Select.Option value="Off-Compus">Off-Compus</Select.Option>
-                            <Select.Option value="On-Compus">On-Compus</Select.Option>
-                        </Select>
-                    </Form.Item>
-                </Form>
-            </Modal>
-
         </DefaultLayout>
     );
 };
-
-// export default JobHome;

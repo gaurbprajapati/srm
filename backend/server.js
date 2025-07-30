@@ -1,251 +1,128 @@
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
-import { fstat } from 'fs';
 import { config } from 'dotenv';
-import userRoute from './routes/userRoute.js';
-import clubRoute from './routes/clubRoute.js';
 import { connectDB } from './data/dbConnect.js';
-import multer from 'multer';
-import { ClubModel } from './models/ClubModel.js';
-const uploadMiddleware = multer({ dest: "/backend/uploads" });
-import { JobModel } from './models/JobSchema.js';
-const app = express();
+import { errorHandler, notFound } from './middleware/error.js';
 
-const port = process.env.PORT || 5000;
+// Import routes
+import userRoute from './routes/userRoute.js';
+import clubRoute from './routes/ClubRoute.js';
+import jobRoute from './routes/jobRoute.js';
+
 // Load environment variables
 config({
     path: "./data/config.env",
 });
 
+const app = express();
+const port = process.env.PORT || 5000;
 
-app.use(express.json())
-
-
-// app.use('/api/club', clubRoute)
-
-// app.use(
-//     cors({
-//         origin: "http://localhost:3000/",
-//         // origin: [process.env.FRONTEND_URL],
-//         methods: ["GET", "POST", "PUT", "DELETE"],
-//         credentials: true,
-//     })
-// );
-
-app.use(cors());
-
-app.use('/api/user', userRoute)
-
-// Call the function to connect to the database
+// Connect to database
 connectDB();
 
+// Trust proxy for rate limiting (if behind a proxy like nginx)
+app.set('trust proxy', 1);
 
-// console.log(process.env.FRONTEND_URL, "hello");
+// Middleware
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// if (process.env.NODE_ENV === 'production') {
-//     app.use('/', express.static('client/build'))
-//     app.get('*', (req, res) => {
-//         res.sendFile(path.resolve(__dirname, 'client/build/index.html'));
-//     });
-// }
+// CORS configuration
+app.use(cors({
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
 
+        const allowedOrigins = [
+            process.env.FRONTEND_URL || "http://localhost:3000",
+            "http://localhost:3000",
+            "http://127.0.0.1:3000"
+        ];
 
-//================================================================================================Club ENDPOINTS================================================================================================
-
-
-
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, "../FrontEnd/src/images/");
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now();
-        cb(null, uniqueSuffix + file.originalname);
-    },
-});
-
-const upload = multer({ storage: storage });
-
-app.post("/create-club", upload.single("image"), async (req, res) => {
-    try {
-
-        if (req.file === undefined) return res.status(422).json("No file uploaded");
-
-        const imageName = req.file.filename;
-
-        const { title, category, discription, observation, achievement, president, vicePresident, memberName, facultyName, announcment, whatup, instagram, linkedin, discord } = req.body;
-
-        const formattedAnnouncements = announcment.map(item => ({
-            announcmentName: item.announcmentName,
-            announcmentdate: item.announcmentdate
-        }));
-
-        const postDoc = await ClubModel.create({
-            title,
-            category,
-            discription,
-            achievement,
-            observation,
-            president,
-            vicePresident,
-            memberName,
-            facultyName,
-            announcment: formattedAnnouncements,
-            whatup,
-            instagram,
-            linkedin,
-            discord,
-            cover: imageName,
-        });
-        res.json(postDoc);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.put("/update-club/:id", upload.single("image"), async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { title, category, discription, observation, achievement, president, vicePresident, memberName, facultyName, announcment, whatup, instagram, linkedin, discord } = req.body;
-
-        const postDoc = await ClubModel.findById(id);
-
-        if (!postDoc) {
-            return res.status(404).json({ error: "Club not found" });
-        }
-
-        let imageName = "";
-        if (!req.file) {
-            imageName = postDoc.cover;
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true);
         } else {
-            imageName = req.file.filename;
+            callback(new Error('Not allowed by CORS'));
         }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "x-csrf-token"],
+    exposedHeaders: ["Content-Range", "X-Content-Range"]
+}));
 
-        const updatedFields = {
-            title,
-            category,
-            discription,
-            achievement,
-            observation,
-            president,
-            vicePresident,
-            memberName,
-            facultyName,
-            whatup,
-            instagram,
-            linkedin,
-            discord,
-            cover: imageName,
-        };
-
-        if (announcment && announcment.length > 0) {
-            updatedFields.announcment = postDoc.announcment.concat(announcment.map(item => ({
-                announcmentName: item.announcmentName,
-                announcmentdate: new Date(item.announcmentdate)
-            })));
-        }
-
-        const updatedPostDoc = await postDoc.updateOne(updatedFields, { new: true });
-
-        res.json(updatedPostDoc);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+// Security headers
+app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    next();
 });
 
-app.get("/club/:id", async (req, res) => {
-    const { id } = req.params;
-    const postDoc = await ClubModel.findById(id);
-    res.json(postDoc);
+// API Routes
+app.use('/api/user', userRoute);
+app.use('/api/clubs', clubRoute);
+app.use('/api/jobs', jobRoute);
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+    res.json({
+        success: true,
+        message: 'Server is running!',
+        timestamp: new Date().toISOString(),
+        version: '2.0.0',
+        environment: process.env.NODE_ENV || 'development'
+    });
 });
 
-app.get("/clubs", async (req, res) => {
-    const { id } = req.params;
-    const postDoc = await ClubModel.find({});
-    res.json(postDoc);
+// API documentation route
+app.get('/api', (req, res) => {
+    res.json({
+        success: true,
+        message: 'SRM API v2.0 - JWT Authentication System',
+        documentation: {
+            auth: '/api/user - User authentication endpoints',
+            clubs: '/api/clubs - Club management endpoints',
+            jobs: '/api/jobs - Job management endpoints',
+            health: '/api/health - Health check endpoint'
+        },
+        authRequired: 'Include Authorization: Bearer <token> header for protected routes'
+    });
 });
 
-app.delete("/club/:id", async (req, res) => {
-    const { id } = req.params;
-    try {
-        await ClubModel.findByIdAndRemove(id);
-        res.json("post deleted");
-    } catch (err) {
-        res.json(err);
-    }
+// Production static files serving
+if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.join(process.cwd(), 'client/build')));
+
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(process.cwd(), 'client/build/index.html'));
+    });
+}
+
+// Error handling middleware (must be last)
+app.use(notFound);
+app.use(errorHandler);
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+    console.log('👋 SIGTERM received, shutting down gracefully');
+    process.exit(0);
 });
 
-//================================================================================================Job ENDPOINTS================================================================================================
-
-// Create a job
-app.post('/create-jobs', async (req, res) => {
-    try {
-        const job = new JobModel(req.body);
-        await job.save();
-        const alljobs = await JobModel.find();
-        res.status(201).send(alljobs);
-    } catch (err) {
-        res.status(400).send(err);
-    }
+process.on('SIGINT', () => {
+    console.log('👋 SIGINT received, shutting down gracefully');
+    process.exit(0);
 });
 
-// Get all jobs
-app.get('/jobs', async (req, res) => {
-    try {
-        const jobs = await JobModel.find();
-        res.send(jobs);
-    } catch (err) {
-        res.status(500).send(err);
-    }
+// Start server
+app.listen(port, () => {
+    console.log('🚀 ================================');
+    console.log(`🚀 Server is running on port ${port}`);
+    console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🌐 CORS enabled for: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
+    console.log(`🔐 JWT Authentication: Enabled`);
+    console.log(`📚 API Documentation: http://localhost:${port}/api`);
+    console.log(`�� Health Check: http://localhost:${port}/api/health`);
+    console.log('🚀 ================================');
 });
-
-// Get a job by ID
-app.get('/jobs/:id', async (req, res) => {
-    try {
-        const job = await JobModel.findById(req.params.id);
-        if (!job) {
-            return res.status(404).send();
-        }
-        res.send(jobs);
-    } catch (err) {
-        res.status(500).send(err);
-    }
-});
-
-// Update a job by ID
-app.patch('/jobs/:id', async (req, res) => {
-    const updates = Object.keys(req.body);
-    const allowedUpdates = ['title', 'company', 'location', 'salary', 'description', 'requirements', 'eligibility', 'linkedin', 'companyWebsite', 'type', 'campus'];
-    const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
-
-    if (!isValidOperation) {
-        return res.status(400).send({ error: 'Invalid updates!' });
-    }
-
-    try {
-        const job = await JobModel.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-        if (!job) {
-            return res.status(404).send();
-        }
-        res.send(job);
-    } catch (err) {
-        res.status(400).send(err);
-    }
-});
-
-// Delete a job by ID
-app.delete('/jobs/:id', async (req, res) => {
-    try {
-        const job = await JobModel.findByIdAndDelete(req.params.id);
-        if (!job) {
-            return res.status(404).send();
-        }
-        // const alljobs = await JobModel.find();
-        res.send(job);
-    } catch (err) {
-        res.status(500).send(err);
-    }
-});
-
-app.listen(port, () => console.log(`Example app listening on port ${port}!`))

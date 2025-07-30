@@ -13,6 +13,7 @@ import Templateshome from './pages/Templateshome';
 import { JobHome } from './components/Jobs/JobHome';
 import OnCampusJobs from './components/Jobs/OnCampusJobs';
 import ErrorPage from './components/ErrorPage/ErrorPage';
+import { apiUtils } from './utils/api';
 
 function App() {
 
@@ -21,14 +22,14 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-          <Route path="/home" element={<ProtectedRoute>< Home /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute>< Profile /></ProtectedRoute>} />
+          <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/templates/:id" element={<ProtectedRoute><Templates /></ProtectedRoute>} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/templates" element={<Templateshome />} />
           <Route path="/clubs" element={<ClubHome />} />
-          <Route path="/CreateClub" element={<CreateClub />} />
+          <Route path="/CreateClub" element={<ProtectedRoute><CreateClub /></ProtectedRoute>} />
           <Route path="/Club/:id" element={<Clubs />} />
           <Route path="/jobs" element={<JobHome />} />
           <Route path="/oncampusjobs" element={<OnCampusJobs />} />
@@ -41,13 +42,22 @@ function App() {
 
 export default App;
 
-// ---->>> this is called protected Routes 
-// this is protection used to make sure that user cannot able to visit home page without login or register 
-
+// JWT-based Protected Routes with updated localStorage keys
 export function ProtectedRoute(props) {
-  if (localStorage.getItem("sheyresume-user")) {
+  console.log('🔒 ProtectedRoute check...');
+
+  // Use our API utility to check authentication
+  const isAuthenticated = apiUtils.isAuthenticated();
+  const user = apiUtils.getCurrentUser();
+
+  console.log('🔒 Is authenticated:', isAuthenticated);
+  console.log('🔒 Current user:', user);
+
+  if (isAuthenticated && user && user._id) {
+    console.log('✅ Access granted to protected route');
     return props.children;
-  } else {
-    return <Navigate to="/login" />;
   }
+
+  console.log('❌ Access denied, redirecting to login');
+  return <Navigate to="/login" replace />;
 }
