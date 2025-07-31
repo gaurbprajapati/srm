@@ -38,8 +38,8 @@ app.use(cors({
             process.env.FRONTEND_URL || "http://localhost:3000",
             "http://localhost:3000",
             "http://127.0.0.1:3000",
-            // Add your Netlify domain here once deployed
-            "https://your-app-name.netlify.app"
+            // Production Netlify domain
+            "https://campusnexis.netlify.app"
         ];
 
         if (allowedOrigins.includes(origin)) {
