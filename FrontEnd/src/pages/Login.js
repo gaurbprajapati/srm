@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Form, Input, Spin, message, Card, Avatar } from 'antd';
+import { Button, Form, Input, Spin, message, Avatar } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
 import { UserOutlined, LockOutlined, HomeOutlined } from '@ant-design/icons';
 import '../resources/authentication.css'

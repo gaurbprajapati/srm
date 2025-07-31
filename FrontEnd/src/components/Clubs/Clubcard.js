@@ -4,12 +4,11 @@ import "./Clubcard.scss";
 import { ClubNav } from "../../Data";
 import { motion } from "framer-motion";
 import Maincard from "./Maincard/Maincard";
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Spin, Pagination, Button, message } from "antd";
 import { clubAPI, apiUtils } from '../../utils/api';
 
 const Clubcard = () => {
-  const user = apiUtils.getCurrentUser();
   const navigate = useNavigate();
   const [tab, setTab] = useState({ name: "all" });
   const [cdata, setCdata] = useState([]);

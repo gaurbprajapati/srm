@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Modal, Form, Input, message, Spin, Row, Col, Card, Avatar } from 'antd';
+import { Button, Modal, Form, Input, message, Spin, Row, Col, Card } from 'antd';
 import { EditOutlined, DeleteOutlined, UserOutlined, TeamOutlined } from '@ant-design/icons';
 import { clubAPI, apiUtils } from '../../../utils/api';
 import DefaultLayout from '../../DefaultLayout';
