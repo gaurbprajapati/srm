@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Upload, message, Spin, Select, DatePicker, Row, Col, Typography } from 'antd';
+import { Form, Input, Button, message, Spin, Select, Row, Col, Typography } from 'antd';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import DefaultLayout from '../DefaultLayout';
 import { Navigate } from "react-router-dom";
@@ -8,13 +8,6 @@ import { clubAPI } from '../../utils/api';
 const { TextArea } = Input;
 const { Option } = Select;
 const { Title } = Typography;
-
-const normFile = (e) => {
-    if (Array.isArray(e)) {
-        return e;
-    }
-    return e && e.fileList;
-};
 
 export const CreateClub = () => {
     const [form] = Form.useForm();

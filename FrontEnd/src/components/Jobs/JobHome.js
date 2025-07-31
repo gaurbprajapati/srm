@@ -2,8 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Modal, Row, Col, Select, Pagination, message, Spin, Form, Input, Button } from 'antd';
 import DefaultLayout from '../DefaultLayout';
 import { JobCard } from './JobCard';
-import { Checkbox } from 'antd';
-import { useNavigate, Link } from 'react-router-dom';
 import { jobAPI, apiUtils } from '../../utils/api';
 
 export const JobHome = () => {
@@ -14,8 +12,6 @@ export const JobHome = () => {
     const [loading, setLoading] = useState(false);
     const [editVisible, setEditVisible] = useState(false);
     const [form] = Form.useForm();
-    const navigate = useNavigate();
-    const user = apiUtils.getCurrentUser();
 
     useEffect(() => {
         const fetchJobs = async () => {
@@ -41,7 +37,7 @@ export const JobHome = () => {
             }
         };
         fetchJobs();
-    }, [currentPage, type]);
+    }, [currentPage, type, jobsPerPage]);
 
     const handleEditOk = async () => {
         try {

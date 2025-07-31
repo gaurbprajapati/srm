@@ -6,8 +6,6 @@ import programming from "./assets/programming lang.avif";
 import work2 from "./assets/work2.png";
 import work3 from "./assets/work3.png";
 import work4 from "./assets/work4.png";
-import work5 from "./assets/work5.png";
-import work6 from "./assets/work6.png";
 
 // export const Sportclub =
 // {
