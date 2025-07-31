@@ -2,7 +2,7 @@
   "name": "gaurav-resume",
   "version": "1.0.0",
   "description": "",
-  "main": "iserver.js",
+  "main": "server.js",
   "type": "module",
   "engines": {
     "node": ">=16.15.1",
