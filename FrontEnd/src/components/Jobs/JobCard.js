@@ -1,29 +1,13 @@
-import { React, useState } from 'react'
-import { Card, Modal, Button, Form, Input, Badge } from 'antd';
-import { Row, Col, Select, Checkbox, message, Spin } from 'antd';
-import axios from 'axios';
+import React, { useState } from 'react';
+import { Card, Button, Modal, Form, Input, message, Spin, Select } from 'antd';
+import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { jobAPI, apiUtils } from '../../utils/api';
 
-export const JobCard = ({ job, onJobUpdate, onJobDelete }) => {
-
-    const user = JSON.parse(localStorage.getItem("sheyresume-user"));
-
-    const [visible, setVisible] = useState(false);
+export const JobCard = ({ job, onUpdate }) => {
     const [editVisible, setEditVisible] = useState(false);
-    const [form] = Form.useForm();
-
     const [loading, setLoading] = useState(false);
-
-    const showModal = () => {
-        setVisible(true);
-    };
-
-    const handleOk = () => {
-        setVisible(false);
-    };
-
-    const handleCancel = () => {
-        setVisible(false);
-    };
+    const [form] = Form.useForm();
+    const user = apiUtils.getCurrentUser();
 
     const showEditModal = () => {
         form.setFieldsValue(job);
@@ -31,38 +15,55 @@ export const JobCard = ({ job, onJobUpdate, onJobDelete }) => {
     };
 
     const handleEditOk = async () => {
-        const values = await form.validateFields();
-        setLoading(true);
         try {
-            const response = await axios.patch(`http://localhost:5000/jobs/${job._id}`, values);
-            onJobUpdate(response.data);
-            setEditVisible(false);
-            setLoading(false);
-            message.success('Job updated successfully');
+            const values = await form.validateFields();
+            setLoading(true);
+
+            const response = await jobAPI.updateJob(job._id, values);
+
+            if (response.success) {
+                setEditVisible(false);
+                setLoading(false);
+                message.success(response.message || 'Job updated successfully');
+                form.resetFields();
+
+                // Call the onUpdate callback to refresh the parent component
+                if (onUpdate) {
+                    onUpdate();
+                }
+            }
         } catch (err) {
             console.error(err);
             setLoading(false);
-            message.error('Failed to update job');
+            const errorMessage = err.response?.data?.error || 'Failed to update job';
+            message.error(errorMessage);
         }
     };
 
     const handleEditCancel = () => {
         setEditVisible(false);
+        form.resetFields();
     };
 
-
-    const deleteClub = async () => {
-        setLoading(true)
+    const deleteJob = async () => {
+        setLoading(true);
         try {
-            const response = await axios.delete(`http://localhost:5000/jobs/${job._id}`);
-            onJobDelete(response.data._id);
-            setEditVisible(false);
-            setLoading(false)
-            message.success('Job Deleted Successfully');
+            const response = await jobAPI.deleteJob(job._id);
+
+            if (response.success) {
+                setLoading(false);
+                message.success(response.message || 'Job deleted successfully');
+
+                // Call the onUpdate callback to refresh the parent component
+                if (onUpdate) {
+                    onUpdate();
+                }
+            }
         } catch (error) {
             console.error(error);
-            message.error("Deleting Job Failed");
-            setLoading(false)
+            setLoading(false);
+            const errorMessage = error.response?.data?.error || 'Failed to delete job';
+            message.error(errorMessage);
         }
     };
 
@@ -74,7 +75,7 @@ export const JobCard = ({ job, onJobUpdate, onJobDelete }) => {
             okType: 'danger',
             cancelText: 'No',
             onOk() {
-                deleteClub();
+                deleteJob();
             },
             onCancel() {
                 console.log('Cancel');
@@ -82,127 +83,145 @@ export const JobCard = ({ job, onJobUpdate, onJobDelete }) => {
         });
     };
 
-
-
-    if (loading) {
-        return <Spin size='large' />
-    }
+    // Check if current user can edit/delete this job
+    const canEdit = user && (user.isAdmin || (job.createdBy && job.createdBy._id === user._id));
 
     return (
-        <>
-            <Badge.Ribbon text={job.campus} color="red">
+        <Card
+            style={{
+                width: '100%',
+                marginBottom: 16,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                borderRadius: '8px'
+            }}
+            actions={canEdit ? [
+                <EditOutlined key="edit" onClick={showEditModal} />,
+                <DeleteOutlined key="delete" onClick={confirmDelete} style={{ color: 'red' }} />
+            ] : []}
+        >
+            {loading && <Spin size="large" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />}
 
+            <Card.Meta
+                title={<span style={{ fontSize: '18px', fontWeight: 'bold' }}>{job.title}</span>}
+                description={
+                    <div>
+                        <p><strong>Company:</strong> {job.company}</p>
+                        {job.location && <p><strong>Location:</strong> {job.location}</p>}
+                        {job.salary && <p><strong>Salary:</strong> {job.salary}</p>}
+                        {job.type && <p><strong>Type:</strong> {job.type}</p>}
+                        {job.campus && <p><strong>Campus:</strong> {job.campus}</p>}
+                        {job.description && (
+                            <p><strong>Description:</strong> {job.description.substring(0, 100)}
+                                {job.description.length > 100 ? '...' : ''}</p>
+                        )}
+                        {job.eligibility && <p><strong>Eligibility:</strong> {job.eligibility}</p>}
+                        {job.createdBy && (
+                            <p style={{ fontSize: '12px', color: '#666', marginTop: '10px' }}>
+                                Posted by: {job.createdBy.firstName || job.createdBy.username}
+                            </p>
+                        )}
+                        <div style={{ marginTop: '10px' }}>
+                            {job.linkedin && (
+                                <Button
+                                    type="link"
+                                    href={job.linkedin}
+                                    target="_blank"
+                                    size="small"
+                                >
+                                    LinkedIn
+                                </Button>
+                            )}
+                            {job.companyWebsite && (
+                                <Button
+                                    type="link"
+                                    href={job.companyWebsite}
+                                    target="_blank"
+                                    size="small"
+                                >
+                                    Website
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+                }
+            />
 
-                <Card title={job.title} style={{ width: 300, cursor: 'pointer' }}  >
-                    {/* <Badge count={job.compus} style={{ position: 'absolute', top: -4, left: -4 }} /> */}
-                    <p>Company: {job.company}</p>
-                    <p>Location: {job.location}</p>
-                    <p>Salary: {job.salary}</p>
-                    <p>Description: {job.description}</p>
-                    {/* <p>Requirements: {job.requirements.join(', ')}</p> */}
-                    <p>Eligibility: {job.eligibility}</p>
-                    {/* <p>LinkedIn: <a href={job.linkedin}>Link</a></p> */}
-                    {/* <p>Company Website: <a href={job.companyWebsite}>Link</a></p> */}
-                    {/* <p>Type: {job.type}</p> */}
-                    <p>Posted Date: {new Date(job.postedDate).toLocaleDateString()}</p>
-
-                    <Button style={{ marginRight: '10px' }} onClick={showModal}>Full detail</Button>
-                    {user && user.isAdmin ? <Button style={{ marginRight: '10px' }} onClick={showEditModal}>Edit</Button> : null}
-                    {user && user.isAdmin ? <Button onClick={confirmDelete}>Delete</Button> : null}
-                </Card>
-            </Badge.Ribbon>
-            <Modal title={job.title} visible={visible} onOk={handleOk} onCancel={handleCancel} footer={[
-                <Button key="back" onClick={handleCancel}>
-                    Close
-                </Button>,
-                <Button key="submit" type="primary" onClick={handleOk}>
-                    Apply
-                </Button>,
-            ]}>
-                <p>Company: {job.company}</p>
-                <p>{job.campus}</p>
-                <p>Location: {job.location}</p>
-                <p>Salary: {job.salary}</p>
-                <p>Description: {job.description}</p>
-                <p>Requirements: {job.requirements.join(', ')}</p>
-                <p>Eligibility: {job.eligibility}</p>
-                <p>LinkedIn: <a href={job.linkedin}>Link</a></p>
-                <p>Company Website: <a href={job.companyWebsite}>Link</a></p>
-                <p>Type: {job.type}</p>
-                <p>Posted Date: {new Date(job.postedDate).toLocaleDateString()}</p>
-            </Modal>
-            <Modal title={`Edit ${job.title}`} visible={editVisible} onOk={handleEditOk} onCancel={handleEditCancel}>
-                <Form form={form} layout="vertical">
-                    <Row gutter={16}>
-                        <Col span={8}>
-                            <Form.Item name="title" label="Title" rules={[{ required: true }]}>
-                                <Input />
-                            </Form.Item>
-                        </Col>
-                        <Col span={8}>
-                            <Form.Item name="company" label="Company" rules={[{ required: true }]}>
-                                <Input />
-                            </Form.Item>
-                        </Col>
-                        <Col span={8}>
-                            <Form.Item name="location" label="Location">
-                                <Input />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-
-                    <Row gutter={16}>
-                        <Col span={8}>
-                            <Form.Item name="description" label="Description">
-                                <Input.TextArea />
-                            </Form.Item>
-                        </Col>
-                        <Col span={8}>
-                            <Form.Item name="requirements" label="Requirements">
-                                <Input.TextArea />
-                            </Form.Item>
-                        </Col>
-                        <Col span={8}>
-                            <Form.Item name="eligibility" label="Eligibility">
-                                <Input />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-
-                    <Row gutter={16}>
-                        <Col span={8}>
-                            <Form.Item name="linkedin" label="LinkedIn">
-                                <Input />
-                            </Form.Item>
-                        </Col>
-                        <Col span={8}>
-                            <Form.Item name="companyWebsite" label="Company Website">
-                                <Input />
-                            </Form.Item>
-                        </Col>
-                        <Col span={8}>
-
-                            <Form.Item name="salary" label="Salary">
-                                <Input />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Form.Item name="type" label="Type">
-                        <Select>
-                            <Select.Option value="Part-time">Part-time</Select.Option>
-                            <Select.Option value="Full-time">Full-time</Select.Option>
-                            <Select.Option value="Internship">Internship</Select.Option>
-                        </Select>
+            {/* Edit Job Modal */}
+            <Modal
+                title="Edit Job"
+                open={editVisible}
+                onOk={handleEditOk}
+                onCancel={handleEditCancel}
+                width={800}
+                confirmLoading={loading}
+            >
+                <Form
+                    form={form}
+                    layout="vertical"
+                    initialValues={job}
+                >
+                    <Form.Item
+                        name="title"
+                        label="Job Title"
+                        rules={[{ required: true, message: 'Please enter job title' }]}
+                    >
+                        <Input placeholder="Enter job title" />
                     </Form.Item>
-                    <Form.Item name="campus" label="Campus">
-                        <Select>
-                            <Select.Option value="Off-Compus">Off-Compus</Select.Option>
-                            <Select.Option value="On-Compus">On-Compus</Select.Option>
-                        </Select>
+
+                    <Form.Item
+                        name="company"
+                        label="Company"
+                        rules={[{ required: true, message: 'Please enter company name' }]}
+                    >
+                        <Input placeholder="Enter company name" />
                     </Form.Item>
+
+                    <div style={{ display: 'flex', gap: '16px' }}>
+                        <Form.Item name="type" label="Job Type" style={{ flex: 1 }}>
+                            <Select>
+                                <Select.Option value="full-time">Full Time</Select.Option>
+                                <Select.Option value="part-time">Part Time</Select.Option>
+                                <Select.Option value="internship">Internship</Select.Option>
+                                <Select.Option value="contract">Contract</Select.Option>
+                                <Select.Option value="freelance">Freelance</Select.Option>
+                            </Select>
+                        </Form.Item>
+
+                        <Form.Item name="campus" label="Campus Type" style={{ flex: 1 }}>
+                            <Select>
+                                <Select.Option value="on-campus">On Campus</Select.Option>
+                                <Select.Option value="off-campus">Off Campus</Select.Option>
+                            </Select>
+                        </Form.Item>
+
+                        <Form.Item name="location" label="Location" style={{ flex: 1 }}>
+                            <Input placeholder="Job location" />
+                        </Form.Item>
+                    </div>
+
+                    <Form.Item name="salary" label="Salary">
+                        <Input placeholder="Salary range" />
+                    </Form.Item>
+
+                    <Form.Item name="description" label="Job Description">
+                        <Input.TextArea rows={4} placeholder="Describe the job role and responsibilities" />
+                    </Form.Item>
+
+                    <Form.Item name="eligibility" label="Eligibility">
+                        <Input.TextArea rows={2} placeholder="Eligibility criteria" />
+                    </Form.Item>
+
+                    <div style={{ display: 'flex', gap: '16px' }}>
+                        <Form.Item name="linkedin" label="LinkedIn" style={{ flex: 1 }}>
+                            <Input placeholder="LinkedIn profile/company page" />
+                        </Form.Item>
+
+                        <Form.Item name="companyWebsite" label="Company Website" style={{ flex: 1 }}>
+                            <Input placeholder="Company website URL" />
+                        </Form.Item>
+                    </div>
                 </Form>
             </Modal>
-
-        </>
-    )
-}
+        </Card>
+    );
+};

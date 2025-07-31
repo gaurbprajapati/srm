@@ -3,12 +3,22 @@ const { Schema, model } = mongoose;
 
 const ClubSchema = new Schema(
     {
-        title: String,
-        discription: String,
+        title: {
+            type: String,
+            required: true,
+            trim: true
+        },
+        discription: {
+            type: String,
+            required: true
+        },
         observation: String,
         achievement: { type: Array, default: [] },
         cover: String,
-        category: String,
+        category: {
+            type: String,
+            required: true
+        },
         president: String,
         vicePresident: String,
         whatup: String,
@@ -18,9 +28,19 @@ const ClubSchema = new Schema(
         memberName: { type: Array, default: [] },
         facultyName: { type: Array, default: [] },
         announcment: { type: Array, default: [] },
+        createdBy: {
+            type: Schema.Types.ObjectId,
+            ref: 'User',
+            required: true
+        },
+        updatedBy: {
+            type: Schema.Types.ObjectId,
+            ref: 'User'
+        }
     },
     {
         timestamps: true,
     }
 );
+
 export const ClubModel = model("ClubModel", ClubSchema);

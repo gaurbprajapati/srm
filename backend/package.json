@@ -9,12 +9,13 @@
     "npm": ">=8.11.0"
   },
   "scripts": {
-    "client-install": "npm install --prefix client",
+    "client-install": "npm install --prefix ../FrontEnd",
     "server": "nodemon server.js",
-    "client": "npm start --prefix client",
+    "client": "npm start --prefix ../FrontEnd",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "start": "node server.js",
-    "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix client && npm run build --prefix client"
+    "server-only": "nodemon server.js",
+    "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix ../FrontEnd && npm run build --prefix ../FrontEnd"
   },
   "author": "",
   "license": "ISC",
@@ -26,7 +27,9 @@
     "express-validator": "^7.0.1",
     "jsonwebtoken": "^9.0.1",
     "mongoose": "^7.0.0",
-    "multer": "^1.4.5-lts.1",
-    "nodemon": "^2.0.20"
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
   }
 }

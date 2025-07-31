@@ -1,73 +1,218 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Form, Input, Spin } from 'antd';
+import { Button, Form, Input, Spin, message, Card, Avatar } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
+import { UserOutlined, LockOutlined, HomeOutlined } from '@ant-design/icons';
 import '../resources/authentication.css'
-import axios from 'axios';
-
+import { authAPI, apiUtils } from '../utils/api';
 
 function Login() {
-
-    const Navigate = useNavigate();
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+
     const onfinish = async (values) => {
         setLoading(true);
         try {
-            const user = await axios.post("http://localhost:5000/api/user/login/", values);
+            const response = await authAPI.login({
+                email: values.email,
+                password: values.password
+            });
+
             setLoading(false);
-            // message.success("Login successfull");
-            localStorage.setItem('sheyresume-user', JSON.stringify(user.data));
-            Navigate('/home')
+            message.success(response.message || "Login successful");
+            navigate('/home');
         } catch (error) {
+            console.error('Login error:', error);
             setLoading(false);
-            // message.error("Login failed");
+            const errorMessage = error.response?.data?.error || error.message || "Login failed";
+            message.error(errorMessage);
         }
     };
 
-
-    // this is used because if anyone is allready register than user directly neviage to home page without regiter or login 
+    // Redirect to home if already authenticated
     useEffect(() => {
-        if (localStorage.getItem('sheyresume-user')) {
-            Navigate('/home')
+        if (apiUtils.isAuthenticated()) {
+            navigate('/home');
         }
-    })
+    }, [navigate]);
+
+    const testimonials = [
+        {
+            quote: "Cloud Campus Nexus has transformed how students connect with opportunities on campus. The platform makes it incredibly easy to discover clubs, find jobs, and build professional networks.",
+            name: "Sarah Johnson",
+            role: "Computer Science Student",
+            company: "SRM University",
+            avatar: "SJ"
+        },
+        {
+            quote: "As a career counselor, I've seen firsthand how this platform helps students showcase their skills and connect with relevant opportunities. It's a game-changer for campus engagement.",
+            name: "Dr. Michael Chen",
+            role: "Career Services Director",
+            company: "University Career Center",
+            avatar: "MC"
+        },
+        {
+            quote: "The resume builder and job matching features are exceptional. I landed my dream internship through connections I made on this platform.",
+            name: "Priya Sharma",
+            role: "Marketing Student",
+            company: "SRM University",
+            avatar: "PS"
+        }
+    ];
+
+    const [currentTestimonial, setCurrentTestimonial] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
+        }, 5000);
+        return () => clearInterval(interval);
+    }, [testimonials.length]);
 
     return (
+        <div className="auth-container">
+            {/* Left Side - Testimonials */}
+            <div className="auth-left">
+                <div className="testimonial-section">
+                    <div className="brand-header">
+                        <div className="brand-icon">
+                            <HomeOutlined />
+                        </div>
+                        <h1>Cloud Campus Nexus</h1>
+                        <p>Your Gateway to Campus Opportunities</p>
+                    </div>
 
-        <>
-            <section>
+                    <div className="testimonial-content">
+                        <div className="quote-icon">"</div>
+                        <p className="testimonial-text">
+                            {testimonials[currentTestimonial].quote}
+                        </p>
 
-                <div className="auth-parent">
-                    <h1 style={{ marginRight: '90px', color: 'black', fontSize: '300%' }} >Cloud Campus Nexus</h1>
-                    <Form layout='vertical' onFinish={onfinish}>
-                        <h2>Login</h2>
-                        {loading && (<Spin size='large' />)}
-                        <hr />
-                        <Form.Item name='username' label='Username' rules={[{ required: true, message: 'Password require' }]}>
-                            <Input />
+                        <div className="testimonial-author">
+                            <Avatar size={48} style={{ backgroundColor: '#4F46E5', fontSize: '18px' }}>
+                                {testimonials[currentTestimonial].avatar}
+                            </Avatar>
+                            <div className="author-info">
+                                <div className="author-name">{testimonials[currentTestimonial].name}</div>
+                                <div className="author-role">{testimonials[currentTestimonial].role}</div>
+                                <div className="author-company">{testimonials[currentTestimonial].company}</div>
+                            </div>
+                        </div>
+
+                        <div className="testimonial-dots">
+                            {testimonials.map((_, index) => (
+                                <span
+                                    key={index}
+                                    className={`dot ${index === currentTestimonial ? 'active' : ''}`}
+                                    onClick={() => setCurrentTestimonial(index)}
+                                />
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="trusted-by">
+                        <p>Trusted by Students in Over 50+ Universities</p>
+                        <div className="university-logos">
+                            <span>SRM</span>
+                            <span>VIT</span>
+                            <span>BITS</span>
+                            <span>IIT</span>
+                            <span>NIT</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Right Side - Login Form */}
+            <div className="auth-right">
+                <div className="auth-form-container">
+                    <div className="form-header">
+                        <h2>Log In to your account</h2>
+                        <p>To continue where you left off, please enter your details.</p>
+                    </div>
+
+                    <Form
+                        layout='vertical'
+                        onFinish={onfinish}
+                        autoComplete="off"
+                        className="auth-form"
+                    >
+                        <Form.Item
+                            name='email'
+                            label='Email'
+                            rules={[
+                                { required: true, message: 'Email is required' },
+                                { type: 'email', message: 'Please enter a valid email' }
+                            ]}
+                        >
+                            <Input
+                                prefix={<UserOutlined />}
+                                placeholder="Your Email"
+                                size="large"
+                            />
                         </Form.Item>
-                        <br />
-                        <Form.Item name='password' label='Password' rules={[{ required: true, message: 'Password require' }]}  >
-                            <Input type="password" />
+
+                        <Form.Item
+                            name='password'
+                            label={
+                                <div className="password-label">
+                                    <span>Password</span>
+                                    <Link to="/forgot-password" className="forgot-link">
+                                        Forgot Password?
+                                    </Link>
+                                </div>
+                            }
+                            rules={[{ required: true, message: 'Password is required' }]}
+                        >
+                            <Input.Password
+                                prefix={<LockOutlined />}
+                                placeholder="Your Password"
+                                size="large"
+                            />
                         </Form.Item>
-                        <br />
 
-                        <div >
-
-                            <Link to='/register'>
-                                <button >
-                                    Click Here to Register
-                                </button>
-                            </Link>
-                            <Button name='Primary' style={{ color: 'white', marginLeft: '50px' }} htmlType='submit'>
-                                LOGIN
+                        <Form.Item>
+                            <Button
+                                type="primary"
+                                htmlType='submit'
+                                loading={loading}
+                                block
+                                size="large"
+                                className="auth-button"
+                            >
+                                Login
                             </Button>
+                        </Form.Item>
+
+                        <div className="auth-divider">
+                            <span>or</span>
+                        </div>
+
+                        <Button
+                            block
+                            size="large"
+                            className="sso-button"
+                            icon={<UserOutlined />}
+                        >
+                            Log In Using Single Sign On
+                        </Button>
+
+                        <div className="auth-footer">
+                            <span>New to Cloud Campus Nexus? </span>
+                            <Link to='/register' className="auth-link">
+                                Sign Up
+                            </Link>
                         </div>
                     </Form>
 
+                    {loading && (
+                        <div className="loading-overlay">
+                            <Spin size='large' />
+                        </div>
+                    )}
                 </div>
-            </section>
-        </>
-    )
+            </div>
+        </div>
+    );
 }
 
 export default Login;

@@ -1,60 +1,338 @@
-/* .layout{
+/* Modern Layout CSS inspired by recruitCRM */
+.modern-layout {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  background-color: #f8fafc;
+  overflow: hidden;
+}
+
+/* Sidebar Styles */
+.modern-sidebar {
+  width: 280px;
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 1000;
+}
+
+.modern-sidebar.collapsed {
+  width: 80px;
+}
+
+/* Logo Section */
+.sidebar-logo {
+  padding: 24px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 20px;
+}
+
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.logo-text h2 {
+  color: white;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.logo-text span {
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+/* Sidebar Menu */
+.sidebar-menu {
+  flex: 1;
+  padding: 0 16px;
+  overflow-y: auto;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 4px;
+  border-radius: 8px;
+  color: #cbd5e1;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  transform: translateX(2px);
+}
+
+.menu-item.active {
+  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.menu-item.active::before {
+  content: '';
+  position: absolute;
+  left: -16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 24px;
+  background: white;
+  border-radius: 2px;
+}
+
+.menu-icon {
+  font-size: 18px;
+  width: 20px;
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.menu-label {
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.menu-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 20px 16px;
+}
+
+.menu-section-title {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0 16px 8px;
+  margin-top: 8px;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+  padding: 20px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.user-info {
+  flex: 1;
+}
+
+.user-name {
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.user-role {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+/* Main Content Area */
+.modern-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Header */
+.modern-header {
+  background: white;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  z-index: 999;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.sidebar-toggle {
+  color: #64748b;
+  font-size: 18px;
+  padding: 8px;
+  border-radius: 6px;
+}
+
+.sidebar-toggle:hover {
+  background-color: #f1f5f9;
+  color: #1e293b;
+}
+
+.page-title h1 {
+  color: #1e293b;
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.page-title span {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.notification-btn {
+  color: #64748b;
+  font-size: 18px;
+  padding: 8px;
+  border-radius: 6px;
+}
+
+.notification-btn:hover {
+  background-color: #f1f5f9;
+  color: #1e293b;
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.welcome-text {
+  color: #1e293b;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Content Area */
+.modern-content {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  background-color: #f8fafc;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .modern-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
     height: 100vh;
-    padding:20px  50px;
-    color: azure;
-}
-.header{
-    height: 10%;
-    background-color: black;
-    border-radius: 5px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 50px;
-    
+    z-index: 1001;
+    transform: translateX(-100%);
+  }
+
+  .modern-sidebar.collapsed {
+    transform: translateX(-100%);
+  }
+
+  .modern-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .modern-main {
+    margin-left: 0;
+  }
+
+  .page-title h1 {
+    font-size: 20px;
+  }
+
+  .modern-content {
+    padding: 16px;
+  }
 }
 
-.header h1{
-    color: rbg(255,255,255,0.5);
-    font-size: 22px;
+/* Scrollbar Styling */
+.sidebar-menu::-webkit-scrollbar {
+  width: 4px;
 }
-.content{
-    height:87%;
-    border: 1px solid gray;
-    margin-top: 20px;
-    border-radius: 5px;
-    box-shadow:0 0 3px gray;
-    padding: 10px;
-} */
 
-.layout{
-    height: 160vh;
-    padding: 20px 50px;
+.sidebar-menu::-webkit-scrollbar-track {
+  background: transparent;
 }
-.header{
-    height: 7%;
-    background-color: #EAF6F6;
-    border-radius: 5px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    margin-bottom: 30px;
+
+.sidebar-menu::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
 }
-.header h1{
-    color: rgba(0, 0, 0, 0.5);
-    font-size: 22px;
-    font-style: bold;
+
+.sidebar-menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
-.header button{
-    border: 1px solid white !important;
-    /* color: rgba(255, 255, 255, 0.5) !important; */
+
+/* Animation for menu items */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
-/* .content{
-    height: 87%;
-    border: 1px solid gray;
-    margin-top: 20px;
-    border-radius: 5px;
-    box-shadow: 0 0 3px rgba(128, 128, 128, 0.486);
-    padding: 10px;
-} */
+
+.menu-item {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Badge styling */
+.ant-badge {
+  line-height: 1;
+}
+
+/* Dropdown styling */
+.ant-dropdown-menu {
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}

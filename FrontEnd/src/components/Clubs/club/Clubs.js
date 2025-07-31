@@ -1,88 +1,92 @@
-import React, { useState, useEffect } from "react";
-import axios from 'axios';
-import { useParams } from "react-router-dom";
-import DefaultLayout from '../../DefaultLayout'
-import './Clubs.css';
-import { useNavigate, Link } from 'react-router-dom';
-import { Button, Spin, message, Modal } from "antd";
-import { Form, Input, Select, Row, Col, DatePicker } from 'antd';
-import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
-import { FaWhatsapp, FaInstagram, FaLinkedin, FaDiscord } from 'react-icons/fa';
-
-const { TextArea } = Input;
-const { Option } = Select;
-const normFile = (e) => {
-  if (Array.isArray(e)) {
-    return e;
-  }
-  return e && e.fileList;
-};
-
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Button, Modal, Form, Input, message, Spin, Row, Col, Card, Avatar } from 'antd';
+import { EditOutlined, DeleteOutlined, UserOutlined, TeamOutlined } from '@ant-design/icons';
+import { clubAPI, apiUtils } from '../../../utils/api';
+import DefaultLayout from '../../DefaultLayout';
 
 export const Clubs = () => {
   const { id } = useParams();
-  const [clubData, setClubData] = useState(null);
-  const [loader, setLoader] = useState(false);
-  const [isModalVisible, setIsModalVisible] = useState(false);
   const navigate = useNavigate();
-  const [image, setImage] = useState(null);
-  const onInputChange = (e) => {
-    console.log(e.target.files[0]);
-    setImage(e.target.files[0]);
-  };
-  const user = JSON.parse(localStorage.getItem("sheyresume-user"));
+  const [club, setClub] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [editVisible, setEditVisible] = useState(false);
+  const [form] = Form.useForm();
+  const user = apiUtils.getCurrentUser();
 
   useEffect(() => {
-    const fetchClubsData = async () => {
-      setLoader(true)
+    const fetchClub = async () => {
+      setLoading(true);
       try {
-        const response = await axios.get(`http://localhost:5000/club/${id}`);
-        setClubData(response.data);
-        setLoader(false)
+        const response = await clubAPI.getClub(id);
+
+        if (response.success) {
+          setClub(response.data);
+        } else {
+          message.error('Club not found');
+          navigate('/clubs');
+        }
       } catch (error) {
-        console.error('Error fetching data:', error);
-        setLoader(false)
+        console.error('Error fetching club:', error);
+        message.error('Failed to load club details');
+        navigate('/clubs');
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchClubsData();
+    if (id) {
+      fetchClub();
+    }
+  }, [id, navigate]);
 
-  }, [id]);
+  const showEditModal = () => {
+    form.setFieldsValue(club);
+    setEditVisible(true);
+  };
 
-
-
-  // useEffect(() => {
-  const fetchUpdatedData = async (values) => {
-    setLoader(true)
+  const handleEditOk = async () => {
     try {
-      const response = await axios.put(`http://localhost:5000/update-club/${id}`, values);
-      setClubData(response.data);
-      setIsModalVisible(false);
-      setLoader(false)
+      const values = await form.validateFields();
+      setLoading(true);
+
+      const response = await clubAPI.updateClub(id, values);
+
+      if (response.success) {
+        setClub(response.data);
+        setEditVisible(false);
+        form.resetFields();
+        setLoading(false);
+        message.success(response.message || 'Club updated successfully');
+      }
     } catch (error) {
-      console.error('Error fetching data:', error);
-      setLoader(false)
+      console.error('Error updating club:', error);
+      setLoading(false);
+      const errorMessage = error.response?.data?.error || 'Failed to update club';
+      message.error(errorMessage);
     }
   };
 
-  useEffect(() => {
-    console.log(clubData);
-  }, [clubData]);
-
-  // }, [id]);
+  const handleEditCancel = () => {
+    setEditVisible(false);
+    form.resetFields();
+  };
 
   const deleteClub = async () => {
-    setLoader(true)
+    setLoading(true);
     try {
-      const response = await axios.delete(`http://localhost:5000/club/${id}`);
-      // console.log(response.data);
-      message.success('Club Deleted Successfully');
-      setLoader(false)
-      navigate('/clubs');
+      const response = await clubAPI.deleteClub(id);
+
+      if (response.success) {
+        setLoading(false);
+        message.success(response.message || 'Club deleted successfully');
+        navigate('/clubs');
+      }
     } catch (error) {
-      // console.error(error);
-      message.error("Deleting Club Failed");
-      setLoader(false)
+      console.error('Error deleting club:', error);
+      setLoading(false);
+      const errorMessage = error.response?.data?.error || 'Failed to delete club';
+      message.error(errorMessage);
     }
   };
 
@@ -96,400 +100,286 @@ export const Clubs = () => {
       onOk() {
         deleteClub();
       },
-      onCancel() {
-        console.log('Cancel');
-      },
     });
   };
 
-  const showModal = () => {
-    setIsModalVisible(true);
-  };
+  // Check if current user can edit/delete this club
+  const canEdit = user && (user.isAdmin || (club?.createdBy && club.createdBy._id === user._id));
 
-  const handleOk = () => {
-    setIsModalVisible(false);
-  };
-
-  const handleCancel = () => {
-    setIsModalVisible(false);
-  };
-
-
-  if (!clubData) {
-    return <Spin size='large' />
+  if (loading && !club) {
+    return (
+      <DefaultLayout>
+        <div style={{ textAlign: 'center', padding: '50px' }}>
+          <Spin size="large" />
+          <p>Loading club details...</p>
+        </div>
+      </DefaultLayout>
+    );
   }
 
-  if (loader) {
-    return <Spin size='large' />
+  if (!club) {
+    return (
+      <DefaultLayout>
+        <div style={{ textAlign: 'center', padding: '50px' }}>
+          <h3>Club not found</h3>
+          <Button type="primary" onClick={() => navigate('/clubs')}>
+            Back to Clubs
+          </Button>
+        </div>
+      </DefaultLayout>
+    );
   }
-
-  const val = true;
-  const { title, discription, achievement, president, vicePresident, memberName, facultyName, announcment, cover } = clubData;
 
   return (
-
     <DefaultLayout>
-      {val ?
-        <div style={{ display: 'flex' }}>
-          {user && user.isAdmin ? <Button className="editClub-btn" style={{ marginRight: '10px' }} onClick={showModal} >Edit Cubs</Button> : null}
-          {user && user.isAdmin ? <Button className="editClub-btn" onClick={confirmDelete}  >Delete Cubs</Button> : null}
-        </div>
-        : null}
+      <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+        {/* Club Header */}
+        <Card style={{ marginBottom: '20px' }}>
+          <Row gutter={[16, 16]} align="middle">
+            <Col xs={24} md={6}>
+              {club.cover && (
+                <img
+                  src={`/images/${club.cover}`}
+                  alt={club.title}
+                  style={{
+                    width: '100%',
+                    maxWidth: '200px',
+                    height: '200px',
+                    objectFit: 'cover',
+                    borderRadius: '8px'
+                  }}
+                />
+              )}
+            </Col>
+            <Col xs={24} md={18}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <h1 style={{ margin: 0, fontSize: '2.5em' }}>{club.title}</h1>
+                  <p style={{ fontSize: '16px', color: '#666', margin: '8px 0' }}>
+                    <strong>Category:</strong> {club.category}
+                  </p>
+                  <p style={{ fontSize: '14px', marginTop: '16px' }}>
+                    {club.discription}
+                  </p>
+                </div>
 
-
-      <div className="main" style={{ backgroundColor: '#EEF7FF' }}>
-
-        <div className="image">
-          <div className="intro">
-            <div className="i-left">
-              <span>Welcome to the</span>
-              <span>{title}</span>
-              <span>{discription}</span>
-            </div>
-            <div className="i-right">
-
-              <img src={require(`../../../images/${cover}`)} alt="club cover" width={"350px"} height={"300px"} />
-            </div>
-          </div>
-        </div>
-
-
-        <div className="box">
-          <div className="InnerBox">
-            <h1>Observation</h1>
-            <p>{clubData.observation}</p>
-
-            <div className="achievement">
-              <h1>Achievement</h1>
-              {/* <p>{achievement.length}</p> */}
-              {(achievement).map((ach, index) => (
-                <p key={index}>{ach}</p>
-              ))}
-            </div>
-
-
-            <h1>Members</h1>
-            {memberName.map((member, index) => (
-              <p key={index}>{member}</p>
-            ))}
-
-            <div className="members" style={{ display: 'flex', flexDirection: 'row' }}>
-              <div className="student">
-                <h3>Student Coordinator</h3>
-                <span className="sub-header" style={{ fontSize: '1rem', fontWeight: 'bold' }}>President:-  </span>
-                <span>{president}</span>  <br />
-                <span className="sub-header" style={{ fontSize: '1rem', fontWeight: 'bold' }}>Vice President:-  </span>
-                <span>{vicePresident}</span><br />
-                <span className="sub-header" style={{ fontSize: '1rem', fontWeight: 'bold' }}>Club Members:-</span><br />
-                {memberName.map((member, index) => (
-                  <span key={index}>{member}</span>
-                ))}
+                {canEdit && (
+                  <div>
+                    <Button
+                      icon={<EditOutlined />}
+                      onClick={showEditModal}
+                      style={{ marginRight: '8px' }}
+                    >
+                      Edit
+                    </Button>
+                    {user.isAdmin && (
+                      <Button
+                        icon={<DeleteOutlined />}
+                        danger
+                        onClick={confirmDelete}
+                      >
+                        Delete
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
-              <div className="facul">
-                <span className="sub-header" >Faculty Coordinator</span><br />
-                {facultyName.map((faculty, index) => (
-                  <span key={index}>{faculty}</span>
-                ))}
-              </div>
-            </div>
-          </div>
+            </Col>
+          </Row>
+        </Card>
 
-          <div className="cont">
-            {announcment.length >= 1 ? (
-              <div className="announce">
-                <h3>Announcement</h3>
-                {announcment.map((announce, index) => (
-                  <div key={index}>
-                    <p>{announce.announcmentName} : {new Date(announce.announcmentdate).toLocaleDateString()}</p>
+        {/* Club Details */}
+        <Row gutter={[16, 16]}>
+          {/* Leadership */}
+          <Col xs={24} md={12}>
+            <Card title="Leadership" size="small">
+              {club.president && (
+                <p><UserOutlined /> <strong>President:</strong> {club.president}</p>
+              )}
+              {club.vicePresident && (
+                <p><UserOutlined /> <strong>Vice President:</strong> {club.vicePresident}</p>
+              )}
+            </Card>
+          </Col>
+
+          {/* Vision/Observation */}
+          {club.observation && (
+            <Col xs={24} md={12}>
+              <Card title="Vision" size="small">
+                <p>{club.observation}</p>
+              </Card>
+            </Col>
+          )}
+
+          {/* Members */}
+          {club.memberName && club.memberName.length > 0 && (
+            <Col xs={24} md={12}>
+              <Card title={`Members (${club.memberName.length})`} size="small">
+                <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                  {club.memberName.map((member, index) => (
+                    <p key={index} style={{ margin: '4px 0' }}>
+                      <TeamOutlined /> {member}
+                    </p>
+                  ))}
+                </div>
+              </Card>
+            </Col>
+          )}
+
+          {/* Faculty */}
+          {club.facultyName && club.facultyName.length > 0 && (
+            <Col xs={24} md={12}>
+              <Card title="Faculty Members" size="small">
+                {club.facultyName.map((faculty, index) => (
+                  <p key={index} style={{ margin: '4px 0' }}>
+                    <UserOutlined /> {faculty}
+                  </p>
+                ))}
+              </Card>
+            </Col>
+          )}
+
+          {/* Achievements */}
+          {club.achievement && club.achievement.length > 0 && (
+            <Col xs={24}>
+              <Card title="Achievements" size="small">
+                <ul>
+                  {club.achievement.map((achievement, index) => (
+                    <li key={index} style={{ marginBottom: '8px' }}>
+                      {achievement}
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            </Col>
+          )}
+
+          {/* Announcements */}
+          {club.announcment && club.announcment.length > 0 && (
+            <Col xs={24}>
+              <Card title="Announcements" size="small">
+                {club.announcment.map((announcement, index) => (
+                  <div key={index} style={{ marginBottom: '12px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
+                    <strong>{announcement.announcmentName}</strong>
+                    {announcement.announcmentdate && (
+                      <span style={{ float: 'right', color: '#666', fontSize: '12px' }}>
+                        {new Date(announcement.announcmentdate).toLocaleDateString()}
+                      </span>
+                    )}
                   </div>
                 ))}
+              </Card>
+            </Col>
+          )}
+
+          {/* Social Media */}
+          <Col xs={24}>
+            <Card title="Connect With Us" size="small">
+              <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                {club.whatup && (
+                  <Button type="primary" href={club.whatup} target="_blank">
+                    WhatsApp
+                  </Button>
+                )}
+                {club.instagram && (
+                  <Button type="primary" href={club.instagram} target="_blank">
+                    Instagram
+                  </Button>
+                )}
+                {club.linkedin && (
+                  <Button type="primary" href={club.linkedin} target="_blank">
+                    LinkedIn
+                  </Button>
+                )}
+                {club.discord && (
+                  <Button type="primary" href={club.discord} target="_blank">
+                    Discord
+                  </Button>
+                )}
               </div>
-            ) : null}
-            <br />
-            {/* <div className="clubs">
-            <h3>Clubs</h3> */}
-            {/* Display other clubs except the current one */}
-            {/* {prop.Clubs.map((dataa, index) => {
-              if (dataa !== title) {
-                return <p key={index} className='row'>{dataa}</p>;
-              }
-            })} */}
-            {/* </div> */}
-          </div>
+            </Card>
+          </Col>
+        </Row>
+
+        {/* Back Button */}
+        <div style={{ textAlign: 'center', marginTop: '40px' }}>
+          <Button size="large" onClick={() => navigate('/clubs')}>
+            Back to All Clubs
+          </Button>
         </div>
 
-        <div className="footer" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
-          <h2>Get Connect On</h2>
-          <div style={{ display: 'flex', justifyContent: 'space-around', width: '200px', paddingBottom: '40px' }}>
-            <a href={clubData.whatup} target="_blank" rel="noopener noreferrer"><FaWhatsapp size={30} /></a>
-            <a href={clubData.instagram} target="_blank" rel="noopener noreferrer"><FaInstagram size={30} /></a>
-            <a href={clubData.linkedin} target="_blank" rel="noopener noreferrer"><FaLinkedin size={30} /></a>
-            <a href={clubData.discord} target="_blank" rel="noopener noreferrer"><FaDiscord size={30} /></a>
-          </div>
-        </div>
-      </div >
-
-
-      <Modal width={1200} height={100} title="Edit Club" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
-        <Form
-          labelCol={{ span: 6 }}
-          // wrapperCol={{ span: 18 }}
-          layout="horizontal"
-          // style={{ maxWidth: 800 }}
-          // form={form}
-          onFinish={fetchUpdatedData}
-          initialValues={{
-            title: clubData.title,
-            category: clubData.category,
-            discription: clubData.discription,
-            cover: cover,
-            observation: clubData.observation,
-            president: clubData.president,
-            vicePresident: clubData.vicePresident,
-            whatup: clubData.whatup,
-            instagram: clubData.instagram,
-            linkedin: clubData.linkedin,
-            discord: clubData.discord,
-            memberName: clubData.memberName,
-            facultyName: clubData.facultyName,
-            // announcment: announcment,
-            // announcment: announcment.map(item => ({
-            //   announcmentName: item.announcmentName || "",
-            //   announcmentdate: item.announcmentdate || ""
-            // })),
-            achievement: achievement
-          }}
+        {/* Edit Modal */}
+        <Modal
+          title="Edit Club"
+          open={editVisible}
+          onOk={handleEditOk}
+          onCancel={handleEditCancel}
+          width={800}
+          confirmLoading={loading}
         >
-          <Row gutter={16}>
-            <Col span={8}>
-              <Form.Item label="Club Name" name="title" rules={[{ required: true }]}>
-                <Input placeholder="Title" />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item label="Category" name="category" rules={[{ required: true }]}>
-                <Select placeholder="Select categories">
-                  <Option value="Sports">Sports</Option>
-                  <Option value="Education">Education</Option>
-                  <Option value="Cultural">Cultural</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item label="Description" name="discription" rules={[{ required: true }]}>
-                <TextArea rows={1} placeholder="Description" />
-              </Form.Item>
-            </Col>
-          </Row>
+          <Form form={form} layout="vertical" initialValues={club}>
+            <Form.Item
+              name="title"
+              label="Club Name"
+              rules={[{ required: true, message: 'Please enter club name' }]}
+            >
+              <Input />
+            </Form.Item>
 
-          <Row gutter={16}>
-            <Col span={8}>
-              <Form.Item label="Club Logo" name="upload" valuePropName="fileList" getValueFromEvent={normFile}>
-                <input type="file" accept="image/*" onChange={onInputChange}></input>
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item label="Observation" name="observation">
-                <TextArea rows={1} placeholder="Observation" />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item label="President" name="president" rules={[{ required: true }]}>
-                <Input placeholder="President" />
-              </Form.Item>
-            </Col>
-          </Row>
+            <Form.Item
+              name="discription"
+              label="Description"
+              rules={[{ required: true, message: 'Please enter description' }]}
+            >
+              <Input.TextArea rows={4} />
+            </Form.Item>
 
-          <Row gutter={16}>
-            <Col span={8}>
-              <Form.Item label="VicePresident" name="vicePresident" rules={[{ required: true }]}>
-                <Input placeholder="Vice President" />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item label="WhatUp" name="whatup">
-                <Input placeholder="WhatUp Url" />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item label="Instagram" name="instagram">
-                <Input placeholder="Instagram Url" />
-              </Form.Item>
-            </Col>
-          </Row>
+            <Form.Item name="observation" label="Vision/Mission">
+              <Input.TextArea rows={3} />
+            </Form.Item>
 
-          <Row gutter={16}>
-            <Col span={8}>
-              <Form.Item label="Linkedin" name="linkedin">
-                <Input placeholder="Linkedin Url" />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item label="Discord" name="discord">
-                <Input placeholder="Discord Url" />
-              </Form.Item>
-            </Col>
-          </Row>
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="president" label="President">
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="vicePresident" label="Vice President">
+                  <Input />
+                </Form.Item>
+              </Col>
+            </Row>
 
-          <Row gutter={16}>
-            <Col span={8}>
-              <Form.List name="memberName">
-                {(fields, { add, remove }) => (
-                  <>
-                    {fields.map(({ key, name }) => (
-                      <Row gutter={16} key={key}>
-                        <Col span={16}>
-                          <Form.Item
-                            name={name}
-                            rules={[{ required: true, message: "Missing member name" }]}
-                          >
-                            <Input placeholder="Member Name" />
-                          </Form.Item>
-                        </Col>
-                        <Col span={4}>
-                          <MinusCircleOutlined style={{ fontSize: 25, color: 'tomato', marginTop: 8 }} onClick={() => remove(name)} />
-                        </Col>
-                      </Row>
-                    ))}
-                    <Form.Item>
-                      <Button
-                        type="dashed"
-                        onClick={() => add()}
-                        block
-                        icon={<PlusOutlined />}
-                      >
-                        Add Club Member
-                      </Button>
-                    </Form.Item>
-                  </>
-                )}
-              </Form.List>
-            </Col>
+            {/* Social Media Links */}
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="whatup" label="WhatsApp">
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="instagram" label="Instagram">
+                  <Input />
+                </Form.Item>
+              </Col>
+            </Row>
 
-            <Col span={8}>
-              <Form.List name="facultyName">
-                {(fields, { add, remove }) => (
-                  <>
-                    {fields.map(({ key, name }) => (
-                      <Row gutter={16} key={key}>
-                        <Col span={16}>
-                          <Form.Item
-                            name={name}
-                            rules={[{ required: true, message: "Missing faculty member name" }]}
-                            style={{ marginBottom: 0 }}
-                          >
-                            <Input placeholder="Faculty Member" />
-                          </Form.Item>
-                        </Col>
-                        <Col span={4}>
-                          <MinusCircleOutlined style={{ fontSize: 25, color: 'tomato', marginTop: 8 }} onClick={() => remove(name)} />
-                        </Col>
-                      </Row>
-                    ))}
-                    <Form.Item>
-                      <Button
-                        type="dashed"
-                        onClick={() => add()}
-                        block
-                        icon={<PlusOutlined />}
-                      >
-                        Add Faculty Member
-                      </Button>
-                    </Form.Item>
-                  </>
-                )}
-              </Form.List>
-            </Col>
-          </Row>
-
-
-          <Row gutter={16}>
-            <Col span={8}>
-              <Form.List name="announcment">
-                {(fields, { add, remove }) => (
-                  <>
-                    {fields.map(({ key, name, ...restField }) => (
-                      <Row gutter={16} key={key}>
-                        <Col span={20}>
-                          <Form.Item
-                            {...restField}
-                            name={[name, "announcmentName"]}
-                            rules={[{ required: true, message: "Missing announcment" }]}
-                            style={{ marginBottom: 0 }}
-                          >
-                            <Input placeholder="Club Announcment" style={{ width: 'calc(100% - 20px)' }} />
-                          </Form.Item>
-                          <Form.Item
-                            {...restField}
-                            name={[name, "announcmentdate"]}
-                          // rules={[{ required: true, message: "Missing date" }]}
-                          >
-                            <DatePicker placeholder="Select Date" />
-                          </Form.Item>
-                        </Col>
-                        <Col span={4}>
-                          <MinusCircleOutlined style={{ fontSize: 25, color: 'tomato', marginTop: 8 }} onClick={() => remove(name)} />
-                        </Col>
-                      </Row>
-                    ))}
-                    <Form.Item>
-                      <Button
-                        type="dashed"
-                        onClick={() => add()}
-                        block
-                        icon={<PlusOutlined />}
-                      >
-                        Add Announcment Event
-                      </Button>
-                    </Form.Item>
-                  </>
-                )}
-              </Form.List>
-            </Col>
-
-
-            <Col span={8}>
-              <Form.List name="achievement">
-                {(fields, { add, remove }) => (
-                  <>
-                    {fields.map(({ key, name }) => (
-                      <Row gutter={16} key={key}>
-                        <Col span={16}>
-                          <Form.Item
-                            name={name}
-                            rules={[{ required: true, message: "Missing Achievement" }]}
-                            style={{ marginBottom: 0 }}
-                          >
-                            <Input placeholder="Achievement Member" />
-                          </Form.Item>
-                        </Col>
-                        <Col span={4}>
-                          <MinusCircleOutlined style={{ fontSize: 25, color: 'tomato', marginTop: 8 }} onClick={() => remove(name)} />
-                        </Col>
-                      </Row>
-                    ))}
-                    <Form.Item>
-                      <Button
-                        type="dashed"
-                        onClick={() => add()}
-                        block
-                        icon={<PlusOutlined />}
-                      >
-                        Add Club Achievement
-                      </Button>
-                    </Form.Item>
-                  </>
-                )}
-              </Form.List>
-            </Col>
-
-          </Row>
-          <Form.Item>
-            <Button type="primary" htmlType="submit">Submit</Button>
-          </Form.Item>
-        </Form>
-      </Modal>
-
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="linkedin" label="LinkedIn">
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="discord" label="Discord">
+                  <Input />
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+        </Modal>
+      </div>
     </DefaultLayout>
   );
-}
+};

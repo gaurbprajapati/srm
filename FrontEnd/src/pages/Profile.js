@@ -1,40 +1,82 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import DefaultLayout from '../components/DefaultLayout'
 import { Tabs, Form, Button, Spin, message } from 'antd'
 import PersonalInfo from '../components/PersonalInfo';
 import SkillsEducation from '../components/SkillsEducation';
 import ExperienceProjects from '../components/ExperienceProjects';
-import axios from 'axios';
-
-
+import { authAPI, apiUtils } from '../utils/api';
 
 function Profile() {
     const [loading, setLoading] = useState(false);
-    const user = JSON.parse(localStorage.getItem("sheyresume-user"));
+    const [user, setUser] = useState(null);
+    const [form] = Form.useForm();
+
+    // Load user data on component mount
+    useEffect(() => {
+        const loadUserData = async () => {
+            try {
+                setLoading(true);
+                const response = await authAPI.getProfile();
+                if (response.success) {
+                    setUser(response.data);
+                    form.setFieldsValue(response.data);
+                }
+            } catch (error) {
+                // Fallback to localStorage if API fails
+                const localUser = apiUtils.getCurrentUser();
+                if (localUser) {
+                    setUser(localUser);
+                    form.setFieldsValue(localUser);
+                }
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadUserData();
+    }, [form]);
+
     const onfinish = async (values) => {
         setLoading(true);
         try {
-            const result = await axios.post("http://localhost:5000/api/user/update/", { ...values, _id: user._id });
+            const response = await authAPI.updateProfile(values);
 
-            //this will update data if any user already register and updated and want to edit the profile 
-            //result.data update the updated data in local storage to mongo
-            localStorage.setItem('sheyresume-user', JSON.stringify(result.data))
-            setLoading(false);
-            message.success("Profile Updated Successfull");
+            if (response.success) {
+                setUser(response.data);
+                setLoading(false);
+                message.success(response.message || "Profile Updated Successfully");
+            }
         } catch (error) {
             setLoading(false);
-            message.error("Update failed");
+            const errorMessage = error.response?.data?.error || "Update failed";
+            message.error(errorMessage);
         }
     };
+
+    if (!user) {
+        return (
+            <DefaultLayout>
+                <div style={{ textAlign: 'center', padding: '50px' }}>
+                    <Spin size='large' />
+                    <p>Loading profile...</p>
+                </div>
+            </DefaultLayout>
+        );
+    }
 
     return (
         <>
             <DefaultLayout>
                 {loading && <Spin size='large' />}
-                <div className="update-profile" >
+                <div className="update-profile">
                     <h4><b>Update Profile</b></h4>
                     <hr />
-                    <Form layout="vertical" onFinish={onfinish} initialValues={user}>
+                    <Form
+                        form={form}
+                        layout="vertical"
+                        onFinish={onfinish}
+                        initialValues={user}
+                    >
                         <Tabs defaultActiveKey="1">
                             <Tabs.TabPane tab="Personal Info" key="1">
                                 <PersonalInfo />
@@ -47,47 +89,17 @@ function Profile() {
                             </Tabs.TabPane>
                         </Tabs>
 
-                        <Button htmlType="submit">UPDATE</Button>
+                        <Button
+                            type="primary"
+                            htmlType="submit"
+                            loading={loading}
+                            style={{ marginTop: '20px' }}
+                        >
+                            UPDATE PROFILE
+                        </Button>
                     </Form>
                 </div>
             </DefaultLayout>
-
-
-
-            {/* <div className="container">
-                    <h2>Update Profile </h2>
-                    <Form layout='vertical' onfinish={(values) => console.log(values)}>
-                        <ul className="nav nav-tabs">
-                            <li className="active"><a data-toggle="tab" href="#home">Personal Info</a></li>
-                            <li><a data-toggle="tab" href="#menu1">Skill and Education</a></li>
-                            <li><a data-toggle="tab" href="#menu3">Experience and Projects</a></li>
-                        </ul>
-
-
-                        <div className="tab-content">
-                            <div id="home" className="tab-pane fade in active">
-                                <PersonalInfo />
-                            </div>
-                            <div id="menu1" className="tab-pane fade">
-                                <h3>Skill and Education </h3>
-                                <SkillsEducation />
-                            </div>
-
-                            <div id="menu3" className="tab-pane fade">
-                                <h3>Experience and Projects</h3>
-                                <ExperienceProjects />
-                            </div>
-                        </div>
-
-                        <Button htmlType='submit' style={{ marginTop: '30px' }}>
-                            UPDATE
-                        </Button>
-
-                    </Form>
-
-                </div> */}
-
-            {/* </DefaultLayout> */}
         </>
     )
 }

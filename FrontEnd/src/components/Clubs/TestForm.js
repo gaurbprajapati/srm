@@ -1,23 +1,30 @@
 import { useState, React } from 'react';
 import { Form, Input, Button, message, Spin } from 'antd';
-import axios from 'axios';
+import { clubAPI } from '../../utils/api';
 
 const { TextArea } = Input;
 
 export const TestForm = () => {
     const [loading, setLoading] = useState(false);
+
     const onFinish = async (values) => {
+        setLoading(true);
         try {
-            await axios.post('/create-club', ...values);
-            // Handle success
-            console.log('Data submitted successfully');
-            setLoading(false);
-            message.success("Profile Updated Successfull");
+            const response = await clubAPI.createClub(values);
+
+            if (response.success) {
+                console.log('Club created successfully');
+                message.success(response.message || "Club created successfully");
+                // Reset form after successful creation
+            } else {
+                message.error(response.message || "Failed to create club");
+            }
         } catch (error) {
-            // Handle error
-            console.error('Error submitting data:', error);
+            console.error('Error creating club:', error);
+            const errorMessage = error.response?.data?.error || 'Failed to create club';
+            message.error(errorMessage);
+        } finally {
             setLoading(false);
-            message.error("Update failed");
         }
     };
 
@@ -27,6 +34,7 @@ export const TestForm = () => {
             <Form
                 name="club_form"
                 onFinish={onFinish}
+                layout="vertical"
                 initialValues={{
                     intro: { img: '', a: '', b: '' },
                     content: { head: [], Obs: '', Ach: '', Mem: '', Fac: [], Pres: '', Vicepres: '', Other: [] },
@@ -34,44 +42,44 @@ export const TestForm = () => {
                 }}
             >
                 <Form.Item label="Image" name={['intro', 'img']}>
-                    <Input />
+                    <Input placeholder="Image URL or path" />
                 </Form.Item>
                 <Form.Item label="A" name={['intro', 'a']}>
-                    <Input />
+                    <Input placeholder="Field A" />
                 </Form.Item>
                 <Form.Item label="B" name={['intro', 'b']}>
-                    <Input />
+                    <Input placeholder="Field B" />
                 </Form.Item>
                 <Form.Item label="Head" name={['content', 'head']}>
-                    <Input />
+                    <Input placeholder="Head" />
                 </Form.Item>
                 <Form.Item label="Observation" name={['content', 'Obs']}>
-                    <TextArea rows={4} />
+                    <TextArea rows={4} placeholder="Observation details" />
                 </Form.Item>
                 <Form.Item label="Achievement" name={['content', 'Ach']}>
-                    <TextArea rows={4} />
+                    <TextArea rows={4} placeholder="Achievement details" />
                 </Form.Item>
                 <Form.Item label="Membership" name={['content', 'Mem']}>
-                    <TextArea rows={4} />
+                    <TextArea rows={4} placeholder="Membership details" />
                 </Form.Item>
-                <Form.Item label="Fac" name={['content', 'Fac']}>
-                    <Input />
+                <Form.Item label="Faculty" name={['content', 'Fac']}>
+                    <Input placeholder="Faculty information" />
                 </Form.Item>
                 <Form.Item label="President" name={['content', 'Pres']}>
-                    <Input />
+                    <Input placeholder="President name" />
                 </Form.Item>
                 <Form.Item label="Vice President" name={['content', 'Vicepres']}>
-                    <Input />
+                    <Input placeholder="Vice President name" />
                 </Form.Item>
                 <Form.Item label="Other" name={['content', 'Other']}>
-                    <Input />
+                    <Input placeholder="Other information" />
                 </Form.Item>
                 <Form.Item label="Announcements" name="Announ">
-                    <Input />
+                    <Input placeholder="Announcements" />
                 </Form.Item>
                 <Form.Item>
-                    <Button type="primary" htmlType="submit">
-                        Submit
+                    <Button type="primary" htmlType="submit" loading={loading}>
+                        Create Club
                     </Button>
                 </Form.Item>
             </Form>
